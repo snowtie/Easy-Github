@@ -1,0 +1,14 @@
+/*
+  폰트 설정 파일
+  - 기존 index.css에서 import 하고 있으나 파일이 누락되어 빌드가 실패했음
+  - 프로젝트 요구사항에 맞춰 추후 Pretendard 등 웹폰트를 추가할 수 있음
+*/
+
+:root {
+  /* 기본 폰트 스택 (OS 기본 폰트 우선) */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, "Helvetica Neue", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
