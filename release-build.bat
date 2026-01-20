@@ -42,18 +42,30 @@ set "STEP=init"
 >> "%LOGFILE%" echo [STEP] %STEP%
 
 REM Parse args: first arg is version, remaining are flags
-set "VERSION=%~1"
-shift
-:parse_flags
-if "%~1"=="" goto :flags_done
-if /I "%~1"=="--no-pause" set "PAUSE_ON_EXIT=0"
-if /I "%~1"=="--commit" set "DO_COMMIT=1"
-if /I "%~1"=="--prompt" set "PROMPT_ON_TAG_EXISTS=1"
-if /I "%~1"=="--keep-utf8" set "KEEP_UTF8=1"
-if /I "%~1"=="--use-existing-tag" set "SKIP_TAG_CREATE=1"
-shift
-goto :parse_flags
-:flags_done
+set "VERSION="
+set "REMAINING_ARGS="
+set "RAW_ARGS=%*"
+
+REM 런처가 공백 없이 전달하는 경우(예: release-build.bat1.2.0--commit)를 복구한다.
+if not "%RAW_ARGS%"=="" (
+  set "RAW_ARGS=%RAW_ARGS:release-build.bat=%"
+  set "RAW_ARGS=%RAW_ARGS:release-build.BAT=%"
+  set "RAW_ARGS=%RAW_ARGS:--= --%"
+  for /f "tokens=1,* delims= " %%A in ("%RAW_ARGS%") do (
+    set "VERSION=%%A"
+    set "REMAINING_ARGS=%%B"
+  )
+)
+
+if not "%REMAINING_ARGS%"=="" (
+  for %%F in (!REMAINING_ARGS!) do (
+    if /I "%%F"=="--no-pause" set "PAUSE_ON_EXIT=0"
+    if /I "%%F"=="--commit" set "DO_COMMIT=1"
+    if /I "%%F"=="--prompt" set "PROMPT_ON_TAG_EXISTS=1"
+    if /I "%%F"=="--keep-utf8" set "KEEP_UTF8=1"
+    if /I "%%F"=="--use-existing-tag" set "SKIP_TAG_CREATE=1"
+  )
+)
 
 REM Ensure git exists
 where git >> "%LOGFILE%" 2>&1
@@ -222,6 +234,7 @@ set "STEP=set_codepage"
 if "%KEEP_UTF8%"=="1" (
   >> "%LOGFILE%" echo [INFO] keep_utf8_enabled
 ) else (
+  set "ORIGINAL_CODEPAGE="
   for /f "tokens=2 delims=:" %%C in ('chcp') do set "ORIGINAL_CODEPAGE=%%C"
   set "ORIGINAL_CODEPAGE=%ORIGINAL_CODEPAGE: =%"
   for /f "tokens=2 delims=:" %%C in ('reg query "HKCU\Console" /v CodePage ^| find "REG_DWORD"') do set "OEM_CODEPAGE=%%C"
