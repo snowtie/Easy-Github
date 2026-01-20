@@ -1,12 +1,23 @@
 import { app, BrowserWindow, Menu, dialog } from 'electron'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registerIpcHandlers } from './ipc/registerIpc'
 import { setupAutoUpdater } from './services/autoUpdate'
 
 const appDir = path.dirname(fileURLToPath(import.meta.url))
+const stableUserDataPath = path.join(app.getPath('appData'), 'EasyGithub')
 
 let mainWindow: BrowserWindow | null = null
+
+function configureUserDataPath(): void {
+  // 업데이트 후에도 프로젝트 경로/로그인 정보가 유지되도록 userData 경로를 고정한다.
+  // app.setPath는 디렉터리가 없으면 예외가 나므로 먼저 생성한다.
+  if (!fs.existsSync(stableUserDataPath)) {
+    fs.mkdirSync(stableUserDataPath, { recursive: true })
+  }
+  app.setPath('userData', stableUserDataPath)
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -20,6 +31,7 @@ function createWindow() {
       preload: path.join(appDir, '../preload/index.cjs')
     }
   })
+
 
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
     if (!isMainFrame) return
@@ -40,10 +52,12 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  configureUserDataPath()
   registerIpcHandlers()
   Menu.setApplicationMenu(null)
   createWindow()
   setupAutoUpdater(mainWindow)
+
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
