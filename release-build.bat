@@ -76,31 +76,6 @@ if errorlevel 1 (
   goto :fail
 )
 
-REM 안정적인 콘솔 렌더링을 위해 UTF-8을 기본으로 쓰지 않는다.
-REM PowerShell 실행 등 일부 환경에서는 65001이 깨지는 문제가 있어 OEM 코드페이지로 복구한다.
-set "STEP=set_codepage"
->> "%LOGFILE%" echo [STEP] %STEP%
-if "%KEEP_UTF8%"=="1" (
-  >> "%LOGFILE%" echo [INFO] keep_utf8_enabled
-) else (
-  for /f "tokens=2 delims=:" %%C in ('chcp') do set "ORIGINAL_CODEPAGE=%%C"
-  set "ORIGINAL_CODEPAGE=%ORIGINAL_CODEPAGE: =%"
-  for /f "tokens=2 delims=:" %%C in ('reg query "HKCU\Console" /v CodePage ^| find "REG_DWORD"') do set "OEM_CODEPAGE=%%C"
-  set "OEM_CODEPAGE=%OEM_CODEPAGE: =%"
-
-  if "%OEM_CODEPAGE%"=="" (
-    set "OEM_CODEPAGE=437"
-  ) else (
-    set /a OEM_CODEPAGE=0x%OEM_CODEPAGE%
-  )
-
-  if not "%OEM_CODEPAGE%"=="" (
-    chcp %OEM_CODEPAGE% >nul
-    set "CODEPAGE_CHANGED=1"
-    >> "%LOGFILE%" echo [INFO] chcp %OEM_CODEPAGE% (from %ORIGINAL_CODEPAGE%)
-  )
-)
-
 REM Ensure this is a git repository
 set "STEP=check_git_repo"
 >> "%LOGFILE%" echo [STEP] %STEP%
@@ -216,20 +191,53 @@ if errorlevel 1 (
 REM Ensure working tree is clean before version bump
 set "STEP=check_clean_worktree"
 >> "%LOGFILE%" echo [STEP] %STEP%
-REM 경고 메시지가 stderr로 출력될 수 있어 stdout만 기준으로 판별한다.
+REM git stdout 파싱 대신 exit code로 판단해 인코딩/경고 영향을 제거한다.
 set "HAS_CHANGES=0"
-set "STATUS_LINES=0"
-for /f "usebackq delims=" %%S in (`git status --porcelain=1 --untracked-files=normal 2^>nul`) do (
+git diff --quiet
+if errorlevel 1 set "HAS_CHANGES=1"
+git diff --cached --quiet
+if errorlevel 1 set "HAS_CHANGES=1"
+for /f "usebackq delims=" %%S in (`git ls-files --others --exclude-standard`) do (
   set "HAS_CHANGES=1"
-  set /a STATUS_LINES+=1
 )
->> "%LOGFILE%" echo [DEBUG] porcelain_lines=%STATUS_LINES%
 if "%HAS_CHANGES%"=="1" (
   echo [ERROR] Working tree is not clean. Commit/stash changes first.
   >> "%LOGFILE%" echo [ERROR] Working tree is not clean:
-  git status --porcelain=1 --untracked-files=normal >> "%LOGFILE%" 2>&1
-  git status --porcelain=1 --untracked-files=normal
+  >> "%LOGFILE%" echo [DEBUG] unstaged:
+  git diff --name-only >> "%LOGFILE%" 2>&1
+  >> "%LOGFILE%" echo [DEBUG] staged:
+  git diff --cached --name-only >> "%LOGFILE%" 2>&1
+  >> "%LOGFILE%" echo [DEBUG] untracked:
+  git ls-files --others --exclude-standard >> "%LOGFILE%" 2>&1
+  git diff --name-only
+  git diff --cached --name-only
+  git ls-files --others --exclude-standard
   goto :fail
+)
+
+REM 안정적인 콘솔 렌더링을 위해 UTF-8을 기본으로 쓰지 않는다.
+REM PowerShell 실행 등 일부 환경에서는 65001이 깨지는 문제가 있어 OEM 코드페이지로 복구한다.
+set "STEP=set_codepage"
+>> "%LOGFILE%" echo [STEP] %STEP%
+if "%KEEP_UTF8%"=="1" (
+  >> "%LOGFILE%" echo [INFO] keep_utf8_enabled
+) else (
+  for /f "tokens=2 delims=:" %%C in ('chcp') do set "ORIGINAL_CODEPAGE=%%C"
+  set "ORIGINAL_CODEPAGE=%ORIGINAL_CODEPAGE: =%"
+  for /f "tokens=2 delims=:" %%C in ('reg query "HKCU\Console" /v CodePage ^| find "REG_DWORD"') do set "OEM_CODEPAGE=%%C"
+  set "OEM_CODEPAGE=%OEM_CODEPAGE: =%"
+
+  if "%OEM_CODEPAGE%"=="" (
+    set "OEM_CODEPAGE=437"
+  ) else (
+    set /a OEM_CODEPAGE=0x%OEM_CODEPAGE%
+  )
+
+  if not "%OEM_CODEPAGE%"=="" (
+    chcp %OEM_CODEPAGE% >nul
+    set "CODEPAGE_CHANGED=1"
+    >> "%LOGFILE%" echo [INFO] chcp %OEM_CODEPAGE% (from %ORIGINAL_CODEPAGE%)
+  )
 )
 
 REM Ensure package.json exists
