@@ -57,7 +57,8 @@ export const IPC_CHANNELS = {
     CREATE_REPO: 'github:create-repo'
   },
   TODOS: {
-    LIST: 'todos:list'
+    LIST: 'todos:list',
+    UPDATE: 'todos:update'
   },
   STORE: {
     GET_LEARNING_PROGRESS: 'store:get-learning-progress',

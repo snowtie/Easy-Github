@@ -58,6 +58,7 @@ export function ProjectOverview() {
   const [todoDocs, setTodoDocs] = useState<
     { fileName: string; filePath: string; tasks: { checked: boolean; text: string }[] }[]
   >([]);
+  const [todoUpdatingKey, setTodoUpdatingKey] = useState<string | null>(null);
 
   const loadProjects = async () => {
     if (!window.easyGithub) return;
@@ -111,6 +112,34 @@ export function ProjectOverview() {
       setTodoDocs([]);
     } finally {
       setTodoLoading(false);
+    }
+  };
+
+  const handleTodoToggle = async (docFilePath: string, taskIndex: number, checked: boolean) => {
+    if (!window.easyGithub) return;
+
+    if (!activeProjectPath) {
+      toast.error("프로젝트가 선택되어 있지 않습니다");
+      return;
+    }
+
+    const updateKey = `${docFilePath}:${taskIndex}`;
+    setTodoUpdatingKey(updateKey);
+
+    try {
+      const result = await window.easyGithub.todos.update(activeProjectPath, docFilePath, taskIndex, checked);
+      if (!result.success) {
+        toast.error("TODO 항목을 찾지 못했습니다");
+        return;
+      }
+
+      setTodoDocs((prev) =>
+        prev.map((doc) => (doc.filePath === docFilePath ? { ...doc, tasks: result.tasks } : doc))
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "TODO 업데이트에 실패했습니다");
+    } finally {
+      setTodoUpdatingKey(null);
     }
   };
 
@@ -715,16 +744,28 @@ export function ProjectOverview() {
                         <p className="text-xs text-muted-foreground">할 일 항목(- [ ])이 없습니다.</p>
                       ) : (
                         <div className="space-y-2">
-                          {doc.tasks.map((task, index) => (
-                            <div key={`${doc.filePath}:${index}`} className="flex items-start gap-2">
-                              <Checkbox checked={task.checked} disabled />
-                              <span
-                                className={`text-sm ${task.checked ? "line-through text-muted-foreground" : ""}`}
-                              >
-                                {task.text}
-                              </span>
-                            </div>
-                          ))}
+                          {doc.tasks.map((task, index) => {
+                            const updateKey = `${doc.filePath}:${index}`;
+                            const isUpdating = todoUpdatingKey === updateKey;
+
+                            return (
+                              <div key={updateKey} className="flex items-start gap-2">
+                                <Checkbox
+                                  checked={task.checked}
+                                  disabled={isUpdating}
+                                  onCheckedChange={(value) => handleTodoToggle(doc.filePath, index, Boolean(value))}
+                                />
+                                <span
+                                  className={`text-sm ${task.checked ? "line-through text-muted-foreground" : ""}`}
+                                >
+                                  {task.text}
+                                </span>
+                                {task.checked ? (
+                                  <Badge variant="outline" className="text-[10px]">완료</Badge>
+                                ) : null}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </CardContent>

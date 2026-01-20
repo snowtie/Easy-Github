@@ -1,4 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
+import path from 'node:path'
 import { IPC_CHANNELS } from '@/shared/ipc-channels'
 import { validateIpcSender } from '../security/validateSender'
 import { AuthService } from '../services/authService'
@@ -38,7 +39,8 @@ import {
   deleteBranch,
   mergeBranch,
   getOriginUrl,
-  listUserTodos
+  listUserTodos,
+  updateTodoTaskInFile
 } from '../services/gitService'
 
 export function registerIpcHandlers() {
@@ -369,4 +371,22 @@ export function registerIpcHandlers() {
     const fallbacks = githubLogin ? [githubLogin] : []
     return await listUserTodos(repoPath, fallbacks)
   })
+
+  ipcMain.handle(
+    IPC_CHANNELS.TODOS.UPDATE,
+    async (event, repoPath: string, filePath: string, taskIndex: number, checked: boolean) => {
+      if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+      // 보안: repoPath/todos 내부 파일만 수정하도록 제한한다.
+      const resolvedTodosDir = path.join(repoPath, 'todos')
+      const resolvedFilePath = path.resolve(filePath)
+      const normalizedTodosDir = path.resolve(resolvedTodosDir)
+
+      if (!resolvedFilePath.startsWith(normalizedTodosDir + path.sep)) {
+        throw new Error('TODO 파일 경로가 올바르지 않습니다')
+      }
+
+      return await updateTodoTaskInFile(resolvedFilePath, taskIndex, checked)
+    }
+  )
 }

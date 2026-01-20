@@ -368,6 +368,11 @@ export interface TodoTask {
   text: string
 }
 
+export interface TodoUpdateResult {
+  success: boolean
+  tasks: TodoTask[]
+}
+
 export interface TodoDocSummary {
   fileName: string
   filePath: string
@@ -439,6 +444,7 @@ export async function getPreferredGitUserName(repoPath: string): Promise<string 
 function extractTodoTasksFromText(text: string): TodoTask[] {
   // Markdown task list 패턴을 단순 파싱한다.
   // 예) - [ ] 할 일, - [x] 완료한 일
+  // 완료 표시는 " + 완료"로 끝나면 제거한다.
   const lines = text.split(/\r?\n/)
   const tasks: TodoTask[] = []
 
@@ -447,13 +453,51 @@ function extractTodoTasksFromText(text: string): TodoTask[] {
     if (!match) continue
 
     const checked = match[1].toLowerCase() === 'x'
-    const taskText = (match[2] ?? '').trim()
+    const taskText = (match[2] ?? '').replace(/\s*\+\s*완료\s*$/, '').trim()
     if (!taskText) continue
 
     tasks.push({ checked, text: taskText })
   }
 
   return tasks
+}
+
+function updateTodoLine(line: string, checked: boolean): string {
+  const prefixMatch = line.match(/^(\s*[-*]\s+\[)([ xX])(\]\s+.*)$/)
+  if (!prefixMatch) return line
+
+  // 완료 토글 시 체크 표시와 " + 완료" 라벨을 동시에 정리한다.
+  const marker = checked ? 'x' : ' '
+  const statusLabel = checked ? ' + 완료' : ''
+  const baseText = prefixMatch[3].replace(/\s*\+\s*완료\s*$/, '')
+  return `${prefixMatch[1]}${marker}${baseText}${statusLabel}`
+}
+
+export async function updateTodoTaskInFile(
+  filePath: string,
+  taskIndex: number,
+  checked: boolean
+): Promise<TodoUpdateResult> {
+  const content = await fs.readFile(filePath, 'utf-8')
+  const lines = content.split(/\r?\n/)
+  const taskLineIndexes: number[] = []
+
+  for (let index = 0; index < lines.length; index += 1) {
+    if (/^\s*[-*]\s+\[[ xX]\]\s+.*$/.test(lines[index])) {
+      taskLineIndexes.push(index)
+    }
+  }
+
+  if (taskIndex < 0 || taskIndex >= taskLineIndexes.length) {
+    return { success: false, tasks: extractTodoTasksFromText(content) }
+  }
+
+  const lineIndex = taskLineIndexes[taskIndex]
+  lines[lineIndex] = updateTodoLine(lines[lineIndex], checked)
+
+  const nextContent = lines.join('\n')
+  await fs.writeFile(filePath, nextContent, 'utf-8')
+  return { success: true, tasks: extractTodoTasksFromText(nextContent) }
 }
 
 export async function listUserTodos(repoPath: string, fallbackUserNames: string[] = []): Promise<UserTodoListResult> {

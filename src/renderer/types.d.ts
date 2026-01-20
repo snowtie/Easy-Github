@@ -72,6 +72,10 @@ declare global {
           todosDirExists: boolean
           docs: { fileName: string; filePath: string; tasks: { checked: boolean; text: string }[] }[]
         }>
+        update: (repoPath: string, filePath: string, taskIndex: number, checked: boolean) => Promise<{
+          success: boolean
+          tasks: { checked: boolean; text: string }[]
+        }>
       }
       store: {
         getLearningProgress: () => Promise<any>
