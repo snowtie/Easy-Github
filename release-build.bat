@@ -45,17 +45,24 @@ REM Parse args: first arg is version, remaining are flags
 set "VERSION="
 set "REMAINING_ARGS="
 set "RAW_ARGS=%*"
+set "SANITIZED_ARGS=%RAW_ARGS%"
 
 REM 런처가 공백 없이 전달하는 경우(예: release-build.bat1.2.0--commit)를 복구한다.
-if not "%RAW_ARGS%"=="" (
-  set "RAW_ARGS=%RAW_ARGS:release-build.bat=%"
-  set "RAW_ARGS=%RAW_ARGS:release-build.BAT=%"
-  set "RAW_ARGS=%RAW_ARGS:--= --%"
-  for /f "tokens=1,* delims= " %%A in ("%RAW_ARGS%") do (
-    set "VERSION=%%A"
-    set "REMAINING_ARGS=%%B"
-  )
+set "SANITIZED_ARGS=%SANITIZED_ARGS:release-build.bat=%"
+set "SANITIZED_ARGS=%SANITIZED_ARGS:release-build.BAT=%"
+set "SANITIZED_ARGS=%SANITIZED_ARGS:--= --%"
+
+for /f "tokens=1,* delims= " %%A in ("%SANITIZED_ARGS%") do (
+  set "VERSION=%%A"
+  set "REMAINING_ARGS=%%B"
 )
+
+REM 플래그는 문자열 포함 여부로도 처리해 공백 누락 케이스를 막는다.
+echo %SANITIZED_ARGS% | findstr /I /C:"--no-pause" >nul && set "PAUSE_ON_EXIT=0"
+echo %SANITIZED_ARGS% | findstr /I /C:"--commit" >nul && set "DO_COMMIT=1"
+echo %SANITIZED_ARGS% | findstr /I /C:"--prompt" >nul && set "PROMPT_ON_TAG_EXISTS=1"
+echo %SANITIZED_ARGS% | findstr /I /C:"--keep-utf8" >nul && set "KEEP_UTF8=1"
+echo %SANITIZED_ARGS% | findstr /I /C:"--use-existing-tag" >nul && set "SKIP_TAG_CREATE=1"
 
 if not "%REMAINING_ARGS%"=="" (
   for %%F in (!REMAINING_ARGS!) do (
@@ -66,6 +73,10 @@ if not "%REMAINING_ARGS%"=="" (
     if /I "%%F"=="--use-existing-tag" set "SKIP_TAG_CREATE=1"
   )
 )
+
+>> "%LOGFILE%" echo [DEBUG] raw_args=%RAW_ARGS%
+>> "%LOGFILE%" echo [DEBUG] sanitized_args=%SANITIZED_ARGS%
+>> "%LOGFILE%" echo [DEBUG] version=%VERSION% do_commit=%DO_COMMIT% prompt=%PROMPT_ON_TAG_EXISTS%
 
 REM Ensure git exists
 where git >> "%LOGFILE%" 2>&1
@@ -248,8 +259,12 @@ if "%KEEP_UTF8%"=="1" (
 
   if not "%OEM_CODEPAGE%"=="" (
     chcp %OEM_CODEPAGE% >nul
-    set "CODEPAGE_CHANGED=1"
-    >> "%LOGFILE%" echo [INFO] chcp %OEM_CODEPAGE% (from %ORIGINAL_CODEPAGE%)
+    if errorlevel 1 (
+      >> "%LOGFILE%" echo [WARN] chcp_failed codepage=%OEM_CODEPAGE%
+    ) else (
+      set "CODEPAGE_CHANGED=1"
+      >> "%LOGFILE%" echo [INFO] chcp %OEM_CODEPAGE% (from %ORIGINAL_CODEPAGE%)
+    )
   )
 )
 
