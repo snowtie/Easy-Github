@@ -24,6 +24,7 @@ import {
   fetchRepository,
   getGitChanges,
   getGitDiff,
+  getGitInstallationStatus,
   getGitLog,
   getGitStatusSummary,
   gitCommit,
@@ -36,7 +37,8 @@ import {
   createBranch,
   deleteBranch,
   mergeBranch,
-  getOriginUrl
+  getOriginUrl,
+  listUserTodos
 } from '../services/gitService'
 
 export function registerIpcHandlers() {
@@ -297,10 +299,13 @@ export function registerIpcHandlers() {
     await unstageFiles(repoPath, files)
   })
 
-  ipcMain.handle(IPC_CHANNELS.GIT.COMMIT, async (event, repoPath: string, message: string) => {
-    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
-    return await gitCommit(repoPath, message)
-  })
+  ipcMain.handle(
+    IPC_CHANNELS.GIT.COMMIT,
+    async (event, repoPath: string, message: string, author?: { name: string; email: string }) => {
+      if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+      return await gitCommit(repoPath, message, author)
+    }
+  )
 
   ipcMain.handle(IPC_CHANNELS.GIT.LOG, async (event, repoPath: string, maxCount: number) => {
     if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
@@ -343,5 +348,25 @@ export function registerIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.GIT.ORIGIN_URL, async (event, repoPath: string) => {
     if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
     return await getOriginUrl(repoPath)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GIT.CHECK_INSTALLED, async (event) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+    return await getGitInstallationStatus()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.TODOS.LIST, async (event, repoPath: string) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    let githubLogin: string | null = null
+    try {
+      const user = await authService.getUser()
+      githubLogin = typeof user?.login === 'string' ? user.login : null
+    } catch {
+      githubLogin = null
+    }
+
+    const fallbacks = githubLogin ? [githubLogin] : []
+    return await listUserTodos(repoPath, fallbacks)
   })
 }

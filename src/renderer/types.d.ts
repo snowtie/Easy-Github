@@ -53,7 +53,7 @@ declare global {
         changes: (repoPath: string) => Promise<any>
         stage: (repoPath: string, files: string[]) => Promise<void>
         unstage: (repoPath: string, files: string[]) => Promise<void>
-        commit: (repoPath: string, message: string) => Promise<any>
+        commit: (repoPath: string, message: string, author?: { name: string; email: string }) => Promise<any>
         log: (repoPath: string, maxCount: number) => Promise<any>
         diff: (repoPath: string, filePath?: string) => Promise<string>
 
@@ -63,6 +63,15 @@ declare global {
         deleteBranch: (repoPath: string, branchName: string) => Promise<void>
         merge: (repoPath: string, fromBranch: string) => Promise<any>
         originUrl: (repoPath: string) => Promise<string | null>
+        checkInstalled: () => Promise<{ installed: boolean; version?: string; error?: string }>
+      }
+      todos: {
+        list: (repoPath: string) => Promise<{
+          userName: string | null
+          matchKeys: string[]
+          todosDirExists: boolean
+          docs: { fileName: string; filePath: string; tasks: { checked: boolean; text: string }[] }[]
+        }>
       }
       store: {
         getLearningProgress: () => Promise<any>

@@ -158,7 +158,26 @@ export function FileChanges() {
         ? `${commitMessage.trim()}\n\n${commitDescription.trim()}`
         : commitMessage.trim();
 
-      await window.easyGithub.git.commit(activeProjectPath, fullMessage);
+      // GitHub 로그인 상태라면, 커밋 작성자(Author)를 GitHub 계정으로 고정한다.
+      // 로컬 Git 설정(user.name/user.email)이 잘못되어 있거나(예: 다른 도구가 덮어쓴 경우)
+      // GitHub에서 작성자가 엉뚱하게 표시되는 문제를 줄이기 위함이다.
+      let author: { name: string; email: string } | undefined;
+      try {
+        const user = await window.easyGithub.auth.getUser();
+        const login = typeof user?.login === "string" ? user.login : "";
+        const id = typeof user?.id === "number" ? user.id : null;
+
+        if (login && id !== null) {
+          const nameFromProfile = typeof user?.name === "string" ? user.name.trim() : "";
+          const authorName = nameFromProfile || login;
+          const authorEmail = `${id}+${login}@users.noreply.github.com`;
+          author = { name: authorName, email: authorEmail };
+        }
+      } catch {
+        author = undefined;
+      }
+
+      await window.easyGithub.git.commit(activeProjectPath, fullMessage, author);
 
       toast.success(`${selectedFiles.length}개 파일이 커밋되었습니다!`, { id: toastId });
       setCommitMessage("");

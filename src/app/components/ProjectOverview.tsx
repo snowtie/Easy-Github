@@ -7,6 +7,7 @@ import { Badge } from "@/app/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Progress } from "@/app/components/ui/progress";
 import { FolderGit2, FolderOpen, Plus, ExternalLink, GitBranch, Star, Clock, Users, Trash2, RefreshCw, FileText } from "lucide-react";
+import { Checkbox } from "@/app/components/ui/checkbox";
 import { toast } from "sonner";
 
 interface Project {
@@ -25,6 +26,9 @@ interface Project {
 
 const mockProjects: Project[] = [];
 
+const ACTIVE_PROJECT_PATH_KEY = "activeProjectPath";
+const ACTIVE_PROJECT_NAME_KEY = "activeProjectName";
+
 type UpdateStage = "idle" | "checking" | "available" | "not-available" | "downloading" | "downloaded" | "error";
 
 interface UpdateUiState {
@@ -38,6 +42,22 @@ interface UpdateUiState {
 export function ProjectOverview() {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [gitBusy, setGitBusy] = useState<string | null>(null);
+
+  const [activeProjectPath, setActiveProjectPath] = useState<string>(
+    () => localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || ""
+  );
+  const [activeProjectName, setActiveProjectName] = useState<string>(
+    () => localStorage.getItem(ACTIVE_PROJECT_NAME_KEY) || ""
+  );
+
+  const [todoLoading, setTodoLoading] = useState(false);
+  const [todoError, setTodoError] = useState<string | null>(null);
+  const [todoUserName, setTodoUserName] = useState<string | null>(null);
+  const [todoMatchKeys, setTodoMatchKeys] = useState<string[]>([]);
+  const [todoTodosDirExists, setTodoTodosDirExists] = useState(false);
+  const [todoDocs, setTodoDocs] = useState<
+    { fileName: string; filePath: string; tasks: { checked: boolean; text: string }[] }[]
+  >([]);
 
   const loadProjects = async () => {
     if (!window.easyGithub) return;
@@ -57,8 +77,74 @@ export function ProjectOverview() {
     await window.easyGithub.store.saveProjects(nextProjects);
   };
 
+  const refreshTodos = async () => {
+    if (!window.easyGithub) return;
+
+    const repoPath = localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || "";
+    const repoName = localStorage.getItem(ACTIVE_PROJECT_NAME_KEY) || "";
+
+    // 탭 간 선택 프로젝트가 바뀌면 로컬 상태도 동기화한다.
+    setActiveProjectPath(repoPath);
+    setActiveProjectName(repoName);
+
+    if (!repoPath) {
+      setTodoError(null);
+      setTodoUserName(null);
+      setTodoMatchKeys([]);
+      setTodoTodosDirExists(false);
+      setTodoDocs([]);
+      return;
+    }
+
+    setTodoLoading(true);
+    setTodoError(null);
+
+    try {
+      const result = await window.easyGithub.todos.list(repoPath);
+
+      setTodoUserName(result?.userName ?? null);
+      setTodoMatchKeys(Array.isArray(result?.matchKeys) ? result.matchKeys : []);
+      setTodoTodosDirExists(Boolean(result?.todosDirExists));
+      setTodoDocs(Array.isArray(result?.docs) ? result.docs : []);
+    } catch (err: any) {
+      setTodoError(err?.message || "TODO 목록을 불러오지 못했습니다");
+      setTodoDocs([]);
+    } finally {
+      setTodoLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadProjects();
+
+    // 사용자 PC에 Git이 없으면 모든 Git 기능이 실패하므로, 처음에 한 번만 안내한다.
+    // (설치 파일에 Git을 포함하지 않는 구조라서 OS에 설치된 Git이 필요)
+    if (window.easyGithub) {
+      window.easyGithub.git
+        .checkInstalled()
+        .then((status) => {
+          if (!status?.installed) {
+            toast.error("Git이 설치되어 있지 않아 Git 기능을 사용할 수 없습니다", {
+              description: "Git 설치 후 앱을 재시작해주세요 (git-scm.com)"
+            });
+          }
+        })
+        .catch(() => {
+          // 체크 실패는 치명적이지 않으므로 무시
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshTodos();
+
+    const handleActiveProjectChanged = () => {
+      void refreshTodos();
+    };
+
+    window.addEventListener("easygithub:active-project-changed", handleActiveProjectChanged);
+    return () => window.removeEventListener("easygithub:active-project-changed", handleActiveProjectChanged);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [showAddProject, setShowAddProject] = useState(false);
@@ -527,6 +613,124 @@ export function ProjectOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {/* User TODO List */}
+      <Card className="border-2 border-emerald-500/40">
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle>내 TODO</CardTitle>
+              <CardDescription>
+                {activeProjectName ? (
+                  <span>
+                    현재 프로젝트: <strong>{activeProjectName}</strong>
+                  </span>
+                ) : (
+                  "현재 프로젝트가 선택되지 않았습니다"
+                )}
+                <span className="block text-xs text-muted-foreground mt-1">
+                  매칭 키(하나가 안 맞으면 다른 것도 탐색):
+                  {todoMatchKeys.length > 0 ? (
+                    <>
+                      {" "}
+                      {todoMatchKeys.map((k) => (
+                        <code key={k} className="font-mono ml-1">
+                          {k}
+                        </code>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <code className="font-mono">(없음)</code>
+                    </>
+                  )}
+                </span>
+              </CardDescription>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void refreshTodos()}
+              disabled={todoLoading || !activeProjectPath}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${todoLoading ? "animate-spin" : ""}`} />
+              새로고침
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!activeProjectPath ? (
+            <div className="text-sm text-muted-foreground">
+              먼저 프로젝트를 선택해주세요. (프로젝트 카드에서 <strong>상태</strong> 버튼을 누르면 선택됩니다)
+            </div>
+          ) : todoError ? (
+            <div className="text-sm text-red-600">{todoError}</div>
+          ) : todoLoading ? (
+            <div className="text-sm text-muted-foreground">TODO를 불러오는 중...</div>
+          ) : !todoTodosDirExists ? (
+            <div className="text-sm text-muted-foreground">
+              이 저장소에 <code className="font-mono">todos</code> 폴더가 없습니다. 예: <code className="font-mono">todos/{todoMatchKeys[0] ?? todoUserName ?? "your-name"}.md</code>
+            </div>
+          ) : todoDocs.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {todoMatchKeys.length > 0 ? (
+                <>
+                  <code className="font-mono">todos</code> 폴더에서 파일명이 일치하는 문서를 찾지 못했습니다: {" "}
+                  {todoMatchKeys.map((k) => (
+                    <code key={k} className="font-mono ml-1">
+                      {k}
+                    </code>
+                  ))}
+                </>
+              ) : (
+                <>
+                  매칭 키를 만들 수 없습니다. (<code className="font-mono">git config user.name</code> 또는 GitHub 로그인이 필요합니다)
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {todoDocs.map((doc) => {
+                const doneCount = doc.tasks.filter((t) => t.checked).length;
+                const totalCount = doc.tasks.length;
+
+                return (
+                  <Card key={doc.filePath} className="bg-muted/20">
+                    <CardHeader className="py-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-sm font-mono">{doc.fileName}</CardTitle>
+                        <Badge variant="outline">
+                          {doneCount}/{totalCount}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0 pb-4">
+                      {doc.tasks.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">할 일 항목(- [ ])이 없습니다.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {doc.tasks.map((task, index) => (
+                            <div key={`${doc.filePath}:${index}`} className="flex items-start gap-2">
+                              <Checkbox checked={task.checked} disabled />
+                              <span
+                                className={`text-sm ${task.checked ? "line-through text-muted-foreground" : ""}`}
+                              >
+                                {task.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Add Project Button */}
       {!showAddProject && (

@@ -36,7 +36,8 @@ export const IPC_CHANNELS = {
     BRANCH_CREATE: 'git:branch-create',
     BRANCH_DELETE: 'git:branch-delete',
     MERGE: 'git:merge',
-    ORIGIN_URL: 'git:origin-url'
+    ORIGIN_URL: 'git:origin-url',
+    CHECK_INSTALLED: 'git:check-installed'
   },
   GITHUB: {
     // MVP에서는 인증/사용자 정보부터 연결
@@ -54,6 +55,9 @@ export const IPC_CHANNELS = {
     COMMENT_ISSUE: 'github:comment-issue',
     LIST_REPOS: 'github:list-repos',
     CREATE_REPO: 'github:create-repo'
+  },
+  TODOS: {
+    LIST: 'todos:list'
   },
   STORE: {
     GET_LEARNING_PROGRESS: 'store:get-learning-progress',

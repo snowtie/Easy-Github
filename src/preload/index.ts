@@ -72,7 +72,8 @@ contextBridge.exposeInMainWorld('easyGithub', {
     changes: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.CHANGES, repoPath),
     stage: (repoPath: string, files: string[]) => ipcRenderer.invoke(IPC_CHANNELS.GIT.STAGE, repoPath, files),
     unstage: (repoPath: string, files: string[]) => ipcRenderer.invoke(IPC_CHANNELS.GIT.UNSTAGE, repoPath, files),
-    commit: (repoPath: string, message: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.COMMIT, repoPath, message),
+    commit: (repoPath: string, message: string, author?: { name: string; email: string }) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GIT.COMMIT, repoPath, message, author),
     log: (repoPath: string, maxCount: number) => ipcRenderer.invoke(IPC_CHANNELS.GIT.LOG, repoPath, maxCount),
     diff: (repoPath: string, filePath?: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.DIFF, repoPath, filePath),
 
@@ -86,7 +87,11 @@ contextBridge.exposeInMainWorld('easyGithub', {
     merge: (repoPath: string, fromBranch: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.GIT.MERGE, repoPath, fromBranch),
 
-    originUrl: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.ORIGIN_URL, repoPath)
+    originUrl: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.ORIGIN_URL, repoPath),
+    checkInstalled: () => ipcRenderer.invoke(IPC_CHANNELS.GIT.CHECK_INSTALLED)
+  },
+  todos: {
+    list: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.TODOS.LIST, repoPath)
   },
   store: {
     getLearningProgress: () => ipcRenderer.invoke(IPC_CHANNELS.STORE.GET_LEARNING_PROGRESS),
