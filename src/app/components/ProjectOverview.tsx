@@ -4,7 +4,9 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { Badge } from "@/app/components/ui/badge";
-import { FolderGit2, Plus, ExternalLink, GitBranch, Star, Clock, Users, Trash2, RefreshCw, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
+import { Progress } from "@/app/components/ui/progress";
+import { FolderGit2, FolderOpen, Plus, ExternalLink, GitBranch, Star, Clock, Users, Trash2, RefreshCw, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface Project {
@@ -22,6 +24,16 @@ interface Project {
 }
 
 const mockProjects: Project[] = [];
+
+type UpdateStage = "idle" | "checking" | "available" | "not-available" | "downloading" | "downloaded" | "error";
+
+interface UpdateUiState {
+  stage: UpdateStage;
+  latestVersion?: string;
+  releaseNotes?: string;
+  progressPercent?: number;
+  errorMessage?: string;
+}
 
 export function ProjectOverview() {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
@@ -48,9 +60,158 @@ export function ProjectOverview() {
   useEffect(() => {
     loadProjects();
   }, []);
+
   const [showAddProject, setShowAddProject] = useState(false);
   const [newProjectUrl, setNewProjectUrl] = useState("");
   const [newProjectPath, setNewProjectPath] = useState("");
+
+  const [updateBusy, setUpdateBusy] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("");
+  const [updateState, setUpdateState] = useState<UpdateUiState>({ stage: "idle" });
+
+  useEffect(() => {
+    if (!window.easyGithub) return;
+
+    // 보안/UX:
+    // - 업데이트 상태는 main process에서만 알 수 있으므로 이벤트로만 전달받는다.
+    // - 구독 해제 함수를 반드시 호출해 메모리 누수를 막는다.
+    const unsubscribe = window.easyGithub.app.onUpdateEvent((payload: any) => {
+      const type = String(payload?.type ?? "");
+
+      if (type === "checking") {
+        setUpdateState((prev) => ({ ...prev, stage: "checking", errorMessage: undefined }));
+        return;
+      }
+
+      if (type === "available") {
+        const version = String(payload?.info?.version ?? "");
+        const releaseNotes = payload?.info?.releaseNotes ? String(payload.info.releaseNotes) : undefined;
+
+        setUpdateState({ stage: "available", latestVersion: version, releaseNotes });
+        setUpdateDialogOpen(true);
+        return;
+      }
+
+      if (type === "not-available") {
+        setUpdateState({ stage: "not-available" });
+        toast.success("이미 최신 버전입니다");
+        return;
+      }
+
+      if (type === "progress") {
+        const percent = Number(payload?.info?.percent ?? 0);
+        setUpdateState((prev) => ({
+          ...prev,
+          stage: "downloading",
+          progressPercent: Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) : 0
+        }));
+        setUpdateDialogOpen(true);
+        return;
+      }
+
+      if (type === "downloaded") {
+        const version = String(payload?.info?.version ?? "");
+        setUpdateState((prev) => ({ ...prev, stage: "downloaded", latestVersion: version }));
+        setUpdateDialogOpen(true);
+        return;
+      }
+
+      if (type === "error") {
+        const message = String(payload?.info?.message ?? "업데이트 중 오류가 발생했습니다");
+        setUpdateState({ stage: "error", errorMessage: message });
+        setUpdateDialogOpen(true);
+        return;
+      }
+    });
+
+    window.easyGithub.app
+      .getAppVersion()
+      .then((v) => setAppVersion(v))
+      .catch(() => {
+        // 버전 조회 실패는 치명적이지 않음
+      });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, []);
+
+  const handleSelectProjectDirectory = async () => {
+    if (!window.easyGithub) {
+      toast.error("Electron 환경에서만 폴더 선택을 지원합니다");
+      return;
+    }
+
+    try {
+      const selected = await window.easyGithub.app.selectDirectory(newProjectPath || undefined);
+      if (selected) {
+        setNewProjectPath(selected);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "폴더 선택에 실패했습니다");
+    }
+  };
+
+  const handleCheckForUpdates = async () => {
+    if (!window.easyGithub) {
+      toast.error("Electron 환경에서만 업데이트 확인을 지원합니다");
+      return;
+    }
+
+    const toastId = toast.loading("업데이트 확인 중...");
+    setUpdateBusy(true);
+    setUpdateState({ stage: "checking" });
+
+    try {
+      const result = await window.easyGithub.app.checkForUpdates();
+      if (result.status === "disabled") {
+        toast.info("개발 모드에서는 자동 업데이트가 비활성화됩니다", { id: toastId });
+        return;
+      }
+
+      // 결과(업데이트 있음/없음/에러)는 onUpdateEvent로 전달된다.
+      toast.dismiss(toastId);
+    } catch (err: any) {
+      toast.error(err?.message || "업데이트 확인에 실패했습니다", { id: toastId });
+      setUpdateState({ stage: "error", errorMessage: err?.message || "업데이트 확인에 실패했습니다" });
+      setUpdateDialogOpen(true);
+    } finally {
+      setUpdateBusy(false);
+    }
+  };
+
+  const handleDownloadUpdate = async () => {
+    if (!window.easyGithub) return;
+
+    setUpdateBusy(true);
+    setUpdateState((prev) => ({ ...prev, stage: "downloading", progressPercent: 0 }));
+
+    try {
+      const result = await window.easyGithub.app.downloadUpdate();
+      if (result.status === "disabled") {
+        toast.info("개발 모드에서는 자동 업데이트가 비활성화됩니다");
+        return;
+      }
+
+      // 진행률/완료는 onUpdateEvent로 들어온다.
+    } catch (err: any) {
+      toast.error(err?.message || "업데이트 다운로드에 실패했습니다");
+      setUpdateState({ stage: "error", errorMessage: err?.message || "업데이트 다운로드에 실패했습니다" });
+    } finally {
+      setUpdateBusy(false);
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    if (!window.easyGithub) return;
+
+    try {
+      await window.easyGithub.app.installUpdate();
+    } catch (err: any) {
+      toast.error(err?.message || "업데이트 설치에 실패했습니다");
+    }
+  };
 
   const applyStatusToProject = (projectId: string, status: any) => {
     setProjects((prev) => {
@@ -245,6 +406,71 @@ export function ProjectOverview() {
 
   return (
     <div className="space-y-6">
+      <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>업데이트</DialogTitle>
+            <DialogDescription>
+              현재 버전: <span className="font-mono">{appVersion || "-"}</span>
+              {updateState.latestVersion ? (
+                <>
+                  {" "}· 최신 버전: <span className="font-mono">{updateState.latestVersion}</span>
+                </>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="text-sm">
+              {updateState.stage === "idle" && "업데이트 상태를 확인할 수 있습니다"}
+              {updateState.stage === "checking" && "업데이트를 확인하고 있어요"}
+              {updateState.stage === "available" && "새 버전이 있습니다. 다운로드할까요?"}
+              {updateState.stage === "not-available" && "이미 최신 버전입니다"}
+              {updateState.stage === "downloading" && "다운로드 중입니다"}
+              {updateState.stage === "downloaded" && "다운로드 완료! 재시작하면 적용됩니다"}
+              {updateState.stage === "error" && (updateState.errorMessage || "업데이트 중 오류가 발생했습니다")}
+            </div>
+
+            {updateState.stage === "downloading" ? (
+              <div className="space-y-2">
+                <Progress value={updateState.progressPercent ?? 0} />
+                <div className="text-xs text-muted-foreground">{Math.round(updateState.progressPercent ?? 0)}%</div>
+              </div>
+            ) : null}
+
+            {updateState.releaseNotes ? (
+              <pre className="max-h-56 overflow-auto rounded-md border bg-muted/30 p-3 text-xs whitespace-pre-wrap">
+                {updateState.releaseNotes}
+              </pre>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setUpdateDialogOpen(false)}>
+              닫기
+            </Button>
+
+            {updateState.stage === "available" ? (
+              <Button type="button" onClick={handleDownloadUpdate} disabled={updateBusy}>
+                다운로드
+              </Button>
+            ) : null}
+
+            {updateState.stage === "downloading" ? (
+              <Button type="button" disabled>
+                다운로드 중...
+              </Button>
+            ) : null}
+
+            {updateState.stage === "downloaded" ? (
+              <Button type="button" onClick={handleInstallUpdate}>
+                재시작하여 적용
+              </Button>
+            ) : null}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -374,13 +600,19 @@ export function ProjectOverview() {
               <Label htmlFor="local-path" className="text-base font-semibold">
                 저장할 폴더 경로
               </Label>
-              <Input
-                id="local-path"
-                placeholder="예: C:/내문서/프로젝트/my-project"
-                value={newProjectPath}
-                onChange={(e) => setNewProjectPath(e.target.value)}
-                className="text-base"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="local-path"
+                  placeholder="예: C:/내문서/프로젝트/my-project"
+                  value={newProjectPath}
+                  onChange={(e) => setNewProjectPath(e.target.value)}
+                  className="text-base flex-1"
+                />
+                <Button type="button" variant="outline" onClick={handleSelectProjectDirectory}>
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  폴더 선택
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">
                 컴퓨터에 프로젝트를 저장할 폴더를 입력하세요
               </p>
@@ -402,9 +634,15 @@ export function ProjectOverview() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">내 프로젝트</h2>
-          <Badge variant="outline" className="text-sm">
-            {projects.length}개
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={handleCheckForUpdates} disabled={updateBusy}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              업데이트 확인
+            </Button>
+            <Badge variant="outline" className="text-sm">
+              {projects.length}개
+            </Badge>
+          </div>
         </div>
         
         {projects.length === 0 ? (

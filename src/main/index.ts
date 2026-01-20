@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, dialog } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registerIpcHandlers } from './ipc/registerIpc'
+import { setupAutoUpdater } from './services/autoUpdate'
 
 const appDir = path.dirname(fileURLToPath(import.meta.url))
 
@@ -42,6 +43,7 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   Menu.setApplicationMenu(null)
   createWindow()
+  setupAutoUpdater(mainWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

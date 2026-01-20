@@ -5,7 +5,24 @@ import { IPC_CHANNELS } from '@/shared/ipc-channels'
 contextBridge.exposeInMainWorld('easyGithub', {
   app: {
     ping: () => ipcRenderer.invoke(IPC_CHANNELS.APP.PING),
-    openExternal: (url: string) => ipcRenderer.invoke(IPC_CHANNELS.APP.OPEN_EXTERNAL, url)
+    openExternal: (url: string) => ipcRenderer.invoke(IPC_CHANNELS.APP.OPEN_EXTERNAL, url),
+    selectDirectory: (defaultPath?: string) => ipcRenderer.invoke(IPC_CHANNELS.APP.SELECT_DIRECTORY, defaultPath),
+
+    getAppVersion: () => ipcRenderer.invoke(IPC_CHANNELS.APP.GET_APP_VERSION),
+
+    checkForUpdates: () => ipcRenderer.invoke(IPC_CHANNELS.APP.CHECK_FOR_UPDATES),
+    downloadUpdate: () => ipcRenderer.invoke(IPC_CHANNELS.APP.DOWNLOAD_UPDATE),
+    installUpdate: () => ipcRenderer.invoke(IPC_CHANNELS.APP.INSTALL_UPDATE),
+
+    onUpdateEvent: (listener: (payload: any) => void) => {
+      const handler = (_event: unknown, payload: any) => listener(payload)
+      ipcRenderer.on(IPC_CHANNELS.APP.UPDATE_EVENT, handler)
+
+      // 구독 해제 함수를 반환해 메모리 누수를 방지한다.
+      return () => {
+        ipcRenderer.removeListener(IPC_CHANNELS.APP.UPDATE_EVENT, handler)
+      }
+    }
   },
   auth: {
     // 토큰(PAT) 로그인

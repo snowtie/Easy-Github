@@ -6,6 +6,15 @@ declare global {
       app: {
         ping: () => Promise<string>
         openExternal: (url: string) => Promise<void>
+        selectDirectory: (defaultPath?: string) => Promise<string | null>
+
+        getAppVersion: () => Promise<string>
+
+        checkForUpdates: () => Promise<{ status: 'disabled' | 'started' }>
+        downloadUpdate: () => Promise<{ status: 'disabled' | 'started' }>
+        installUpdate: () => Promise<{ status: 'disabled' | 'started' }>
+
+        onUpdateEvent: (listener: (payload: any) => void) => () => void
       }
       auth: {
         setToken: (token: string) => Promise<any>

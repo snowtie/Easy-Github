@@ -1,8 +1,9 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { IPC_CHANNELS } from '@/shared/ipc-channels'
 import { validateIpcSender } from '../security/validateSender'
 import { AuthService } from '../services/authService'
 import { loadAccessToken } from '../services/tokenStore'
+import { checkForUpdatesManually, downloadUpdateManually, getAppVersion, installUpdateManually } from '../services/autoUpdate'
 import { createOctokit } from '../services/githubClient'
 import {
   closeIssue,
@@ -77,6 +78,51 @@ export function registerIpcHandlers() {
 
     const { shell } = await import('electron')
     await shell.openExternal(parsed.toString())
+  })
+
+  ipcMain.handle(IPC_CHANNELS.APP.SELECT_DIRECTORY, async (event, defaultPath?: string) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    const { dialog } = await import('electron')
+
+    // 보안/UX:
+    // - Renderer가 파일 시스템에 직접 접근하지 않도록 main process에서만 네이티브 다이얼로그를 띄운다.
+    // - Git Clone 대상은 "폴더"가 자연스러우므로 openDirectory만 허용한다.
+    const result = await dialog.showOpenDialog({
+      title: '폴더 선택',
+      defaultPath: typeof defaultPath === 'string' && defaultPath.trim().length > 0 ? defaultPath : undefined,
+      properties: ['openDirectory', 'createDirectory']
+    })
+
+    if (result.canceled) return null
+    return result.filePaths[0] ?? null
+  })
+
+  ipcMain.handle(IPC_CHANNELS.APP.CHECK_FOR_UPDATES, async (event) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    // UX: 버튼 클릭 시 즉시 실행되도록 현재 포커스 창을 부모로 사용한다.
+    const focused = BrowserWindow.getFocusedWindow()
+    return await checkForUpdatesManually(focused ?? null)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.APP.DOWNLOAD_UPDATE, async (event) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    const focused = BrowserWindow.getFocusedWindow()
+    return await downloadUpdateManually(focused ?? null)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.APP.INSTALL_UPDATE, (event) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    return installUpdateManually()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.APP.GET_APP_VERSION, (event) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    return getAppVersion()
   })
 
   ipcMain.handle(IPC_CHANNELS.AUTH.SET_TOKEN, async (event, token: string) => {

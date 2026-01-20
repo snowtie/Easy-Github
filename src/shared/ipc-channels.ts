@@ -1,7 +1,13 @@
 export const IPC_CHANNELS = {
   APP: {
     PING: 'app:ping',
-    OPEN_EXTERNAL: 'app:open-external'
+    OPEN_EXTERNAL: 'app:open-external',
+    SELECT_DIRECTORY: 'app:select-directory',
+    CHECK_FOR_UPDATES: 'app:check-for-updates',
+    DOWNLOAD_UPDATE: 'app:download-update',
+    INSTALL_UPDATE: 'app:install-update',
+    GET_APP_VERSION: 'app:get-app-version',
+    UPDATE_EVENT: 'app:update-event'
   },
   AUTH: {
     // 토큰(PAT) 로그인
