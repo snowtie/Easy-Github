@@ -212,27 +212,16 @@ if errorlevel 1 (
 REM Ensure working tree is clean before version bump
 set "STEP=check_clean_worktree"
 >> "%LOGFILE%" echo [STEP] %STEP%
-REM git status --porcelain 출력에 경고가 섞이면 오탐이 날 수 있어 diff 기반으로 점검한다.
+REM 경고 메시지가 stderr로 출력될 수 있어 stdout만 기준으로 판별한다.
 set "HAS_CHANGES=0"
-git diff --quiet
-if errorlevel 1 set "HAS_CHANGES=1"
-git diff --cached --quiet
-if errorlevel 1 set "HAS_CHANGES=1"
-for /f "usebackq delims=" %%S in (`git ls-files --others --exclude-standard`) do (
+for /f "usebackq delims=" %%S in (`git status --porcelain=1 --untracked-files=normal 2^>nul`) do (
   set "HAS_CHANGES=1"
 )
 if "%HAS_CHANGES%"=="1" (
   echo [ERROR] Working tree is not clean. Commit/stash changes first.
   >> "%LOGFILE%" echo [ERROR] Working tree is not clean:
-  >> "%LOGFILE%" echo [DEBUG] unstaged:
-  git diff --name-only >> "%LOGFILE%" 2>&1
-  >> "%LOGFILE%" echo [DEBUG] staged:
-  git diff --cached --name-only >> "%LOGFILE%" 2>&1
-  >> "%LOGFILE%" echo [DEBUG] untracked:
-  git ls-files --others --exclude-standard >> "%LOGFILE%" 2>&1
-  git diff --name-only
-  git diff --cached --name-only
-  git ls-files --others --exclude-standard
+  git status --porcelain=1 --untracked-files=normal >> "%LOGFILE%" 2>&1
+  git status --porcelain=1 --untracked-files=normal
   goto :fail
 )
 
