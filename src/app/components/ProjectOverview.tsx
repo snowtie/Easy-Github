@@ -295,9 +295,10 @@ export function ProjectOverview() {
     try {
       await window.easyGithub.app.installUpdate();
     } catch (err: any) {
-      toast.error(err?.message || "업데이트 설치에 실패했습니다");
+      toast.error(err?.message || "업데이트 적용에 실패했습니다");
     }
   };
+
 
   const applyStatusToProject = (projectId: string, status: any) => {
     setProjects((prev) => {
@@ -548,11 +549,12 @@ export function ProjectOverview() {
               </Button>
             ) : null}
 
-            {updateState.stage === "downloaded" ? (
-              <Button type="button" onClick={handleInstallUpdate}>
-                재시작하여 적용
-              </Button>
-            ) : null}
+              {updateState.stage === "downloaded" ? (
+                <Button type="button" onClick={handleInstallUpdate}>
+                  종료 후 업데이트 적용
+                </Button>
+              ) : null}
+
           </DialogFooter>
         </DialogContent>
       </Dialog>

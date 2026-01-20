@@ -171,9 +171,12 @@ export async function downloadUpdateManually(mainWindow: BrowserWindow | null): 
 export function installUpdateManually(): { status: 'disabled' | 'started' } {
   if (!app.isPackaged) return { status: 'disabled' }
 
-  autoUpdater.quitAndInstall(false, true)
+  // 다운로드가 완료된 상태에서 종료하면 autoInstallOnAppQuit 옵션에 따라 업데이트가 적용된다.
+  // 설치 프로그램을 다시 띄우지 않고, 사용자가 앱을 껐다 켤 때 자연스럽게 반영되도록 한다.
+  app.quit()
   return { status: 'started' }
 }
+
 
 export function getAppVersion(): string {
   return app.getVersion()
