@@ -172,9 +172,10 @@ export function ProjectOverview() {
 
       if (type === "available") {
         const version = String(payload?.info?.version ?? "");
-        const releaseNotes = payload?.info?.releaseNotes ? String(payload.info.releaseNotes) : undefined;
-
+        const releaseNotesRaw = payload?.info?.releaseNotes ? String(payload.info.releaseNotes) : undefined;
+        const releaseNotes = releaseNotesRaw?.replace(/<[^>]+>/g, '').trim() || undefined;
         setUpdateState({ stage: "available", latestVersion: version, releaseNotes });
+
         setUpdateDialogOpen(true);
         return;
       }
@@ -631,9 +632,9 @@ export function ProjectOverview() {
                   "현재 프로젝트가 선택되지 않았습니다"
                 )}
                 <span className="block text-xs text-muted-foreground mt-1">
-                  매칭 키(하나가 안 맞으면 다른 것도 탐색):
                   {todoMatchKeys.length > 0 ? (
                     <>
+                      매칭 키:
                       {" "}
                       {todoMatchKeys.map((k) => (
                         <code key={k} className="font-mono ml-1">
@@ -641,12 +642,8 @@ export function ProjectOverview() {
                         </code>
                       ))}
                     </>
-                  ) : (
-                    <>
-                      {" "}
-                      <code className="font-mono">(없음)</code>
-                    </>
-                  )}
+                  ) : null}
+
                 </span>
               </CardDescription>
             </div>
