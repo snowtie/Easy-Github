@@ -12,6 +12,7 @@ REM   release-build.bat 1.2.3 --commit
 REM   release-build.bat 1.2.3 --commit --no-pause
 REM   release-build.bat 1.2.3 --commit --keep-utf8
 REM   release-build.bat 1.2.3 --commit --use-existing-tag
+REM   release-build.bat 1.2.3 --commit --prompt
 
 set "DEFAULT_TAG_PREFIX=v"
 set "PAUSE_ON_EXIT=1"
@@ -154,19 +155,21 @@ if "%TAG_EXISTS%"=="1" (
     set "SKIP_TAG_PUSH=1"
     >> "%LOGFILE%" echo [INFO] Using existing tag without re-creating it: %TAG%
   ) else (
-    REM 기본 동작: 자동으로 다음 패치 버전으로 올린다.
-    REM (앱에서 BAT를 실행하면 콘솔 입력을 못 받아서 set /p에서 꺼지는 문제가 생김)
+    REM 기본 동작: 기존 태그를 그대로 사용한다.
     if not "%PROMPT_ON_TAG_EXISTS%"=="1" (
-      call :auto_bump_patch "%PKG_VERSION%"
-      if errorlevel 1 goto :fail
-      echo [INFO] Auto bumped to: !PKG_VERSION!  tag=!TAG!
-      >> "%LOGFILE%" echo [INFO] Auto bumped to: !PKG_VERSION!  tag=!TAG!
+      set "SKIP_TAG_CREATE=1"
+      set "SKIP_TAG_PUSH=1"
+      >> "%LOGFILE%" echo [INFO] Using existing tag by default: %TAG%
     ) else (
-      echo        Choose: [A]uto bump patch, [I]nput another version, [C]ancel
-      set /p "CHOICE=Select (A/I/C) [A]: "
-      if "%CHOICE%"=="" set "CHOICE=A"
+      echo        Choose: [U]se existing tag, [A]uto bump patch, [I]nput another version, [C]ancel
+      set /p "CHOICE=Select (U/A/I/C) [U]: "
+      if "%CHOICE%"=="" set "CHOICE=U"
 
-      if /I "%CHOICE%"=="A" (
+      if /I "%CHOICE%"=="U" (
+        set "SKIP_TAG_CREATE=1"
+        set "SKIP_TAG_PUSH=1"
+        >> "%LOGFILE%" echo [INFO] Using existing tag from prompt: %TAG%
+      ) else if /I "%CHOICE%"=="A" (
         call :auto_bump_patch "%PKG_VERSION%"
         if errorlevel 1 goto :fail
         echo [INFO] Using next available version: !PKG_VERSION!  tag=!TAG!
