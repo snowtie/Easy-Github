@@ -255,26 +255,29 @@ export function BranchManager() {
             <div className="bg-card/60 p-4 rounded-lg">
               <p className="font-semibold mb-2">🎮 게임으로 이해하기:</p>
               <p className="text-sm">
-                RPG 게임에서 여러 세이브 파일을 만드는 것과 같아요! 
-                메인 스토리(main 브랜치)는 안전하게 두고, 
-                새로운 시도(feature 브랜치)는 별도로 진행할 수 있어요.
+                Git Flow는 안정 브랜치와 작업 브랜치를 나눠서 운영하는 흐름이에요.
+                <strong>main</strong>은 배포용, <strong>develop</strong>은 개발 통합용으로 두고,
+                기능 개발은 <strong>feature</strong>, 배포 준비는 <strong>release</strong>, 긴급 수정은 <strong>hotfix</strong>에서 처리해요.
+
               </p>
             </div>
             
             <div className="space-y-2 text-sm">
               <p className="font-semibold">브랜치를 사용하는 이유:</p>
               <div className="space-y-1">
-                <p>✅ <strong>안전하게 실험:</strong> 메인 코드를 망가뜨릴 걱정 없이 새 기능 개발</p>
-                <p>✅ <strong>동시 작업:</strong> 여러 기능을 동시에 개발 가능</p>
-                <p>✅ <strong>쉬운 롤백:</strong> 실패하면 브랜치만 삭제하면 돼요</p>
-                <p>✅ <strong>팀 협업:</strong> 각자 자기 브랜치에서 작업 후 합치기</p>
+                <p>✅ <strong>역할 분리:</strong> main(배포), develop(통합), feature/release/hotfix(작업)</p>
+                <p>✅ <strong>배포 안정성:</strong> release에서 충분히 테스트한 뒤 main으로 합칩니다</p>
+                <p>✅ <strong>긴급 대응:</strong> hotfix로 바로 수정 → main, develop에 모두 반영</p>
+                <p>✅ <strong>협업 규칙:</strong> feature는 develop로, release/hotfix는 main+develop로</p>
+
               </div>
             </div>
 
             <div className="bg-amber-100 p-3 rounded-lg border border-amber-300 dark:bg-amber-950/30 dark:border-amber-900">
               <p className="text-xs text-amber-900 dark:text-amber-100">
-                <strong>📌 기억하세요:</strong> main 브랜치는 항상 작동하는 안정적인 코드를 유지하고, 
-                새로운 작업은 별도 브랜치에서 하세요!
+                <strong>📌 기억하세요:</strong> main은 배포용, develop은 통합용이며,
+                feature/release/hotfix는 목적이 끝나면 합치고 정리합니다.
+
               </p>
             </div>
           </CardContent>
@@ -348,7 +351,8 @@ export function BranchManager() {
                   <span className="text-2xl">💡</span>
                   <div className="text-sm text-blue-900 dark:text-blue-100">
                     <p className="font-semibold mb-1">브랜치란?</p>
-                    <p>메인 코드에 영향을 주지 않고 새로운 기능을 개발할 수 있는 별도의 작업 공간이에요!</p>
+              <p>Git Flow에서는 main/develop을 기준으로 feature/release/hotfix 브랜치를 분리해서 작업해요.</p>
+
                   </div>
                 </div>
               </CardContent>
@@ -357,22 +361,23 @@ export function BranchManager() {
             <div className="space-y-2">
               <label className="text-base font-semibold">브랜치 이름</label>
               <Input
-                placeholder="예: feature/login (기능/이름 형식 추천)"
+                placeholder="예: feature/login (Git Flow 기능 브랜치)"
                 value={newBranchName}
                 onChange={(e) => setNewBranchName(e.target.value)}
                 className="text-base"
               />
               <p className="text-sm text-muted-foreground">
-                어떤 작업을 할지 알 수 있는 이름을 지어주세요 (예: <code className="font-mono">feature/login</code>, <code className="font-mono">fix/login-bug</code>, <code className="font-mono">docs/readme</code>)
+                Git Flow 규칙으로 작업 목적에 맞는 접두어를 붙여주세요.
               </p>
               <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
-                <p className="font-semibold">브랜치 예시</p>
+                <p className="font-semibold">Git Flow 브랜치 예시</p>
                 <ul className="mt-1 space-y-1">
-                  <li><span className="font-mono">feature/login</span> - 로그인 기능 추가</li>
-                  <li><span className="font-mono">fix/login-bug</span> - 로그인 버그 수정</li>
-                  <li><span className="font-mono">docs/readme</span> - 사용법 문서 정리</li>
+                  <li><span className="font-mono">feature/login</span> - 새 기능</li>
+                  <li><span className="font-mono">release/1.2.0</span> - 배포 준비</li>
+                  <li><span className="font-mono">hotfix/1.2.1</span> - 긴급 수정</li>
                 </ul>
               </div>
+
 
             </div>
             <div className="space-y-2">
@@ -389,8 +394,9 @@ export function BranchManager() {
                  ))}
               </select>
               <p className="text-sm text-muted-foreground">
-                보통 main 브랜치에서 시작해요
+                Git Flow에서는 기능 작업은 develop에서 시작하는 경우가 많아요
               </p>
+
             </div>
             <div className="flex gap-3">
                <Button onClick={handleCreateBranch} className="flex-1" size="lg" disabled={busy}>

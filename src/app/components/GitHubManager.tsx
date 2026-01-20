@@ -225,7 +225,8 @@ export function GitHubManager() {
     overview: "프로젝트를 추가하고 전체 상태를 확인할 수 있어요. GitHub에서 코드를 다운로드(Clone)하는 곳이에요!",
     changes: "수정한 파일들을 확인하고 저장(Commit)할 수 있어요. 작업한 내용을 기록하는 곳이에요!",
     commits: "지금까지 저장한 모든 작업 기록을 볼 수 있어요. 언제 누가 무엇을 바꿨는지 확인할 수 있어요!",
-    branches: "여러 작업을 동시에 진행할 수 있는 브랜치를 관리해요. 실험적인 작업도 안전하게 할 수 있어요!",
+    branches: "Git Flow 기준으로 브랜치를 나눠 관리해요. main/develop, feature/release/hotfix 흐름을 따르는 곳이에요!",
+
     pulls: "다른 사람과 협업할 때 코드 리뷰를 요청하는 곳이에요. 팀 프로젝트에서 중요해요!",
     issues: "버그나 할 일을 기록하고 관리하는 곳이에요. 프로젝트 관리에 유용해요!"
   };

@@ -77,7 +77,8 @@ const guideSteps: GuideStep[] = [
     description: "큰 작업은 브랜치로 분리하고, 필요하면 PR/Issue 탭에서 협업 기능을 써요.",
     icon: GitBranch,
     tips: [
-      "브랜치는 '안전한 작업 공간'이에요. 실험은 브랜치에서!",
+      "Git Flow에선 main(배포)·develop(통합)·feature/release/hotfix로 역할을 나눠요.",
+
       "PR은 코드 리뷰/병합 흐름이고, Issue는 할 일/버그 추적이에요",
       "앱에서 외부 링크를 열 때는 보안상 GitHub 관련 링크만 열리도록 제한돼요"
     ]
@@ -319,13 +320,14 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
               <Card className="bg-muted">
                 <CardContent className="pt-6">
                   <div className="space-y-3 text-center">
-                    <p className="text-sm text-muted-foreground font-semibold">브랜치 이름 예시:</p>
+                    <p className="text-sm text-muted-foreground font-semibold">Git Flow 브랜치 예시:</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       <Badge className="bg-blue-100 text-blue-800">feature/login</Badge>
                       <Badge className="bg-green-100 text-green-800">feature/signup</Badge>
-                      <Badge className="bg-red-100 text-red-800">bugfix/error</Badge>
-                      <Badge className="bg-purple-100 text-purple-800">hotfix/security</Badge>
+                      <Badge className="bg-amber-100 text-amber-800">release/1.2.0</Badge>
+                      <Badge className="bg-purple-100 text-purple-800">hotfix/1.2.1</Badge>
                     </div>
+
                   </div>
                 </CardContent>
               </Card>
