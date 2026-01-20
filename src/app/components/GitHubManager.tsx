@@ -323,7 +323,8 @@ export function GitHubManager() {
                 <FolderGit2 className="w-7 h-7" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">GitHub 프로젝트 관리자</h1>
+                <h1 className="text-2xl font-bold">Easy Github</h1>
+
                 <p className="text-blue-100 text-sm">쉽고 간단하게 코드를 관리하세요 ✨</p>
               </div>
             </div>
