@@ -363,8 +363,17 @@ export function BranchManager() {
                 className="text-base"
               />
               <p className="text-sm text-muted-foreground">
-                어떤 작업을 할지 알 수 있는 이름을 지어주세요
+                어떤 작업을 할지 알 수 있는 이름을 지어주세요 (예: <code className="font-mono">feature/login</code>, <code className="font-mono">fix/login-bug</code>, <code className="font-mono">docs/readme</code>)
               </p>
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+                <p className="font-semibold">브랜치 예시</p>
+                <ul className="mt-1 space-y-1">
+                  <li><span className="font-mono">feature/login</span> - 로그인 기능 추가</li>
+                  <li><span className="font-mono">fix/login-bug</span> - 로그인 버그 수정</li>
+                  <li><span className="font-mono">docs/readme</span> - 사용법 문서 정리</li>
+                </ul>
+              </div>
+
             </div>
             <div className="space-y-2">
               <label className="text-base font-semibold">어느 브랜치에서 시작할까요?</label>
