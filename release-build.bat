@@ -32,6 +32,10 @@ if "%TS%"=="" set "TS=unknown-time"
 set "LOG_DIR=%~dp0release"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%" >nul 2>nul
 set "LOGFILE=%LOG_DIR%\release-build-%TS%.log"
+if not exist "%LOG_DIR%" (
+  set "LOG_DIR=%TEMP%"
+  set "LOGFILE=%LOG_DIR%\release-build-%TS%.log"
+)
 > "%LOGFILE%" echo [INFO] release-build started at %DATE% %TIME%
 >> "%LOGFILE%" echo [INFO] cwd: %CD%
 set "STEP=init"
@@ -214,9 +218,12 @@ set "STEP=check_clean_worktree"
 >> "%LOGFILE%" echo [STEP] %STEP%
 REM 경고 메시지가 stderr로 출력될 수 있어 stdout만 기준으로 판별한다.
 set "HAS_CHANGES=0"
+set "STATUS_LINES=0"
 for /f "usebackq delims=" %%S in (`git status --porcelain=1 --untracked-files=normal 2^>nul`) do (
   set "HAS_CHANGES=1"
+  set /a STATUS_LINES+=1
 )
+>> "%LOGFILE%" echo [DEBUG] porcelain_lines=%STATUS_LINES%
 if "%HAS_CHANGES%"=="1" (
   echo [ERROR] Working tree is not clean. Commit/stash changes first.
   >> "%LOGFILE%" echo [ERROR] Working tree is not clean:
