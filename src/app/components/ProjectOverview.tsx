@@ -173,7 +173,12 @@ export function ProjectOverview() {
       if (type === "available") {
         const version = String(payload?.info?.version ?? "");
         const releaseNotesRaw = payload?.info?.releaseNotes ? String(payload.info.releaseNotes) : undefined;
-        const releaseNotes = releaseNotesRaw?.replace(/<[^>]+>/g, '').trim() || undefined;
+        const releaseNotes = releaseNotesRaw
+          ?.replace(/<[^>]+>/g, '')
+          .replace(/<\/\s*n\s*>/gi, '')
+          .replace(/&lt;|&gt;/g, '')
+          .replace(/\r\n?/g, '\n')
+          .trim() || undefined;
         setUpdateState({ stage: "available", latestVersion: version, releaseNotes });
 
         setUpdateDialogOpen(true);
