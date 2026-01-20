@@ -7,6 +7,10 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    env:
+      # electron-builder는 CI 환경에서 GitHub 퍼블리시를 감지하면 토큰을 요구한다.
+      # 실제 릴리즈 퍼블리시는 설정되어 있지 않지만, 토큰이 없으면 패키징 단계에서 실패한다.
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
