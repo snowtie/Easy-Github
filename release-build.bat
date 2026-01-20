@@ -42,7 +42,7 @@ set "STEP=init"
 >> "%LOGFILE%" echo [STEP] %STEP%
 
 REM Parse args: first arg is version, remaining are flags
-set "VERSION="
+set "VERSION=%~1"
 set "REMAINING_ARGS="
 set "RAW_ARGS=%*"
 set "SANITIZED_ARGS=%RAW_ARGS%"
@@ -52,10 +52,16 @@ set "SANITIZED_ARGS=%SANITIZED_ARGS:release-build.bat=%"
 set "SANITIZED_ARGS=%SANITIZED_ARGS:release-build.BAT=%"
 set "SANITIZED_ARGS=%SANITIZED_ARGS:--= --%"
 
-for /f "tokens=1,* delims= " %%A in ("%SANITIZED_ARGS%") do (
-  set "VERSION=%%A"
-  set "REMAINING_ARGS=%%B"
+if "%VERSION%"=="" (
+  for /f "tokens=1,* delims= " %%A in ("%SANITIZED_ARGS%") do (
+    set "VERSION=%%A"
+    set "REMAINING_ARGS=%%B"
+  )
 )
+
+REM 잘못 전달된 값(예: '='만 들어오는 경우)은 제거한다.
+if "%VERSION%"=="=" set "VERSION="
+if "%VERSION:~0,1%"=="=" set "VERSION=%VERSION:~1%"
 
 REM 플래그는 문자열 포함 여부로도 처리해 공백 누락 케이스를 막는다.
 echo %SANITIZED_ARGS% | findstr /I /C:"--no-pause" >nul && set "PAUSE_ON_EXIT=0"
