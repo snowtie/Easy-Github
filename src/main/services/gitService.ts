@@ -82,6 +82,15 @@ async function pathExists(targetPath: string): Promise<boolean> {
   }
 }
 
+async function isDirectoryPath(targetPath: string): Promise<boolean> {
+  try {
+    const stat = await fs.stat(targetPath)
+    return stat.isDirectory()
+  } catch {
+    return false
+  }
+}
+
 async function copyDirectoryRecursive(sourceDir: string, targetDir: string, mode: CloneMode): Promise<void> {
   const entries = await fs.readdir(sourceDir, { withFileTypes: true })
 
@@ -605,6 +614,11 @@ export async function updateTodoTaskInFile(
 export async function listUserTodos(repoPath: string, fallbackUserNames: string[] = []): Promise<UserTodoListResult> {
   // TODO 목록도 git config(user.name)에 의존하므로 Git 미설치를 먼저 안내한다.
   await ensureGitInstalledOrThrow()
+
+  if (!(await isDirectoryPath(repoPath))) {
+    return { userName: null, matchKeys: [], todosDirExists: false, docs: [] }
+  }
+
   const userName = await getPreferredGitUserName(repoPath)
   const todosDir = path.join(repoPath, 'todos')
 
