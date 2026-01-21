@@ -62,8 +62,8 @@ contextBridge.exposeInMainWorld('easyGithub', {
       ipcRenderer.invoke(IPC_CHANNELS.GITHUB.CREATE_REPO, name, description, isPrivate)
   },
   git: {
-    clone: (repoUrl: string, targetPath: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.GIT.CLONE, repoUrl, targetPath),
+    clone: (repoUrl: string, targetPath: string, mode?: "overwrite" | "preserve") =>
+      ipcRenderer.invoke(IPC_CHANNELS.GIT.CLONE, repoUrl, targetPath, mode),
     status: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.STATUS, repoPath),
     fetch: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.FETCH, repoPath),
     pull: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.PULL, repoPath),

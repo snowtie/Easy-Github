@@ -261,9 +261,9 @@ export function registerIpcHandlers() {
     saveProjects(projects)
   })
 
-  ipcMain.handle(IPC_CHANNELS.GIT.CLONE, async (event, repoUrl: string, targetPath: string) => {
+  ipcMain.handle(IPC_CHANNELS.GIT.CLONE, async (event, repoUrl: string, targetPath: string, mode?: 'overwrite' | 'preserve') => {
     if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
-    await cloneRepository(repoUrl, targetPath)
+    await cloneRepository(repoUrl, targetPath, mode ?? 'overwrite')
   })
 
   ipcMain.handle(IPC_CHANNELS.GIT.STATUS, async (event, repoPath: string) => {

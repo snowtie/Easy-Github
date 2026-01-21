@@ -1,5 +1,7 @@
 import { execFile } from 'node:child_process'
+import { constants as fsConstants } from 'node:fs'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
@@ -8,6 +10,8 @@ import simpleGit from 'simple-git'
 const execFileAsync = promisify(execFile)
 
 export type GitFileChangeType = 'added' | 'modified' | 'deleted' | 'untracked'
+
+export type CloneMode = 'overwrite' | 'preserve'
 
 export interface GitFileChange {
   path: string
@@ -36,15 +40,14 @@ function isLikelyWindowsDriveRoot(targetPath: string): boolean {
   return /^[a-zA-Z]:\\?$/.test(trimmed)
 }
 
-async function ensureCloneTargetIsEmpty(targetPath: string): Promise<void> {
+async function ensureCloneTargetExists(targetPath: string): Promise<void> {
   const trimmedTargetPath = targetPath.trim()
 
   if (isLikelyWindowsDriveRoot(trimmedTargetPath)) {
     throw new Error('드라이브 루트(예: E:\\)에는 저장할 수 없습니다. 하위 폴더를 선택해주세요.')
   }
 
-  // 저장소 clone은 대상 폴더가 "존재하고 비어있는" 상태가 가장 안전하다.
-  // 폴더가 없으면 먼저 생성해서 권한 문제(EPERM/EACCES)를 조기에 감지한다.
+  // 대상 폴더는 존재해야 하므로 먼저 생성해서 권한 문제를 조기에 감지한다.
   try {
     await fs.mkdir(trimmedTargetPath, { recursive: true })
   } catch (err: any) {
@@ -63,14 +66,104 @@ async function ensureCloneTargetIsEmpty(targetPath: string): Promise<void> {
   if (!stat.isDirectory()) {
     throw new Error('저장 경로가 폴더가 아닙니다')
   }
+}
 
-  const entries = await fs.readdir(trimmedTargetPath)
+function isCopyFileErrorSkippable(err: any): boolean {
+  const code = String(err?.code ?? '')
+  return code === 'EEXIST' || code === 'EISDIR'
+}
+
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await fs.stat(targetPath)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function copyDirectoryRecursive(sourceDir: string, targetDir: string, mode: CloneMode): Promise<void> {
+  const entries = await fs.readdir(sourceDir, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name)
+    const targetPath = path.join(targetDir, entry.name)
+
+    if (entry.isDirectory()) {
+      if (entry.name === '.git' && mode === 'preserve' && (await pathExists(targetPath))) {
+        // 보존 모드에서는 기존 .git을 유지해 충돌/덮어쓰기를 막는다.
+        continue
+      }
+
+      await fs.mkdir(targetPath, { recursive: true })
+      await copyDirectoryRecursive(sourcePath, targetPath, mode)
+      continue
+    }
+
+    if (entry.isSymbolicLink()) {
+      const linkTarget = await fs.readlink(sourcePath)
+      try {
+        await fs.symlink(linkTarget, targetPath)
+      } catch (err: any) {
+        if (mode === 'preserve' && isCopyFileErrorSkippable(err)) continue
+        if (mode === 'overwrite' && String(err?.code ?? '') === 'EEXIST') {
+          await fs.rm(targetPath, { force: true })
+          await fs.symlink(linkTarget, targetPath)
+          continue
+        }
+        throw err
+      }
+      continue
+    }
+
+    try {
+      if (mode === 'preserve') {
+        // 보존 모드는 기존 파일이 있으면 복사를 건너뛴다.
+        await fs.copyFile(sourcePath, targetPath, fsConstants.COPYFILE_EXCL)
+      } else {
+        // 덮어쓰기 모드는 대상 파일을 최신 상태로 맞춘다.
+        await fs.copyFile(sourcePath, targetPath)
+      }
+    } catch (err: any) {
+      if (mode === 'preserve' && isCopyFileErrorSkippable(err)) continue
+      throw err
+    }
+  }
+}
+
+async function cloneRepositoryIntoTemp(repoUrl: string): Promise<string> {
+  const tempBase = path.join(os.tmpdir(), 'easy-github-')
+  const tempDir = await fs.mkdtemp(tempBase)
+
+  // 임시 폴더 내부는 사용하지 않으므로 안내창 없이 진행되게 한다.
+  await runGitCommand(['clone', repoUrl, tempDir])
+  return tempDir
+}
+
+async function runGitCommand(args: string[], cwd?: string): Promise<void> {
+  await execFileAsync('git', args, { cwd, windowsHide: true })
+}
+
+async function ensureDirectoryIsEmpty(targetPath: string): Promise<void> {
+  const entries = await fs.readdir(targetPath)
   if (entries.length > 0) {
     throw new Error('저장 경로가 비어있지 않습니다. 빈 폴더를 선택해주세요.')
   }
 }
 
-export async function cloneRepository(repoUrl: string, targetPath: string): Promise<void> {
+async function cleanupTempDirectory(tempDir: string): Promise<void> {
+  try {
+    await fs.rm(tempDir, { recursive: true, force: true })
+  } catch {
+    // 임시 폴더 삭제 실패는 치명적이지 않으므로 무시
+  }
+}
+
+export async function cloneRepository(
+  repoUrl: string,
+  targetPath: string,
+  mode: CloneMode = 'overwrite'
+): Promise<void> {
   const trimmedRepoUrl = repoUrl.trim()
   const trimmedTargetPath = targetPath.trim()
 
@@ -78,16 +171,25 @@ export async function cloneRepository(repoUrl: string, targetPath: string): Prom
   if (!trimmedTargetPath) throw new Error('저장할 폴더 경로를 입력해주세요')
 
   await ensureGitInstalledOrThrow()
-
-  // 초보자 실수 방지: 이미 파일이 있는 폴더에 clone하면 섞여버릴 수 있음
-  await ensureCloneTargetIsEmpty(trimmedTargetPath)
-
-  // simple-git은 내부적으로 git CLI를 호출한다.
-  // 즉, 사용자의 PC에 Git이 설치되어 있어야 정상 동작한다.
-  const git = simpleGit()
+  await ensureCloneTargetExists(trimmedTargetPath)
 
   try {
-    await git.clone(trimmedRepoUrl, trimmedTargetPath)
+    if (mode === 'overwrite') {
+      await ensureDirectoryIsEmpty(trimmedTargetPath)
+      const git = simpleGit()
+      await git.clone(trimmedRepoUrl, trimmedTargetPath)
+      return
+    }
+
+    // 유지 모드는 임시 폴더에 clone한 뒤 필요한 파일만 복사한다.
+    const tempDir = await cloneRepositoryIntoTemp(trimmedRepoUrl)
+
+    try {
+      // 유지 모드는 기존 파일을 보존하고 없는 파일만 추가한다.
+      await copyDirectoryRecursive(tempDir, trimmedTargetPath, 'preserve')
+    } finally {
+      await cleanupTempDirectory(tempDir)
+    }
   } catch (err: any) {
     // 사용자들이 자주 겪는 케이스:
     // - Git 미설치(또는 PATH 미설정): spawn git ENOENT

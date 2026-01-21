@@ -1,7 +1,7 @@
 {
     "name":  "easygithub",
     "private":  true,
-    "version":  "1.2.3",
+    "version":  "1.2.4",
     "description":  "Beginner-friendly GitHub manager and learning desktop app.",
     "author":  "EasyGithub",
     "type":  "module",

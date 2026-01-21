@@ -44,7 +44,7 @@ declare global {
         createRepository: (name: string, description: string, isPrivate: boolean) => Promise<any>
       }
       git: {
-        clone: (repoUrl: string, targetPath: string) => Promise<void>
+        clone: (repoUrl: string, targetPath: string, mode?: 'overwrite' | 'preserve') => Promise<void>
         status: (repoPath: string) => Promise<any>
         fetch: (repoPath: string) => Promise<void>
         pull: (repoPath: string) => Promise<any>

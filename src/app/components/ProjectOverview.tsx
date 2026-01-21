@@ -6,6 +6,7 @@ import { Label } from "@/app/components/ui/label";
 import { Badge } from "@/app/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Progress } from "@/app/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { FolderGit2, FolderOpen, Plus, ExternalLink, GitBranch, Star, Clock, Users, Trash2, RefreshCw, FileText } from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { toast } from "sonner";
@@ -184,6 +185,8 @@ export function ProjectOverview() {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [appVersion, setAppVersion] = useState<string>("");
   const [updateState, setUpdateState] = useState<UpdateUiState>({ stage: "idle" });
+
+  const [cloneMode, setCloneMode] = useState<"overwrite" | "preserve">("overwrite");
 
   useEffect(() => {
     if (!window.easyGithub) return;
@@ -385,7 +388,9 @@ export function ProjectOverview() {
     setGitBusy("clone");
 
     try {
-      await window.easyGithub.git.clone(newProjectUrl, newProjectPath);
+      // 덮어쓰기 모드는 빈 폴더만 허용하고, 유지 모드는 기존 파일을 보존한다.
+      // 유지 모드는 기존 파일을 보존하고 없는 파일만 추가한다.
+      await window.easyGithub.git.clone(newProjectUrl, newProjectPath, cloneMode);
       setActiveProject(newProjectPath, projectName);
 
       const newProject: Project = {
@@ -864,6 +869,21 @@ export function ProjectOverview() {
               </div>
               <p className="text-sm text-muted-foreground">
                 컴퓨터에 프로젝트를 저장할 폴더를 입력하세요
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">클론 모드</Label>
+              <Select value={cloneMode} onValueChange={(value) => setCloneMode(value as "overwrite" | "preserve")}>
+                <SelectTrigger className="text-base">
+                  <SelectValue placeholder="클론 모드를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="overwrite">덮어쓰기 모드 (빈 폴더 필요)</SelectItem>
+                  <SelectItem value="preserve">유지 모드 (기존 파일 유지)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                유지 모드는 기존 파일을 보존하고 없는 파일만 추가합니다.
               </p>
             </div>
             <div className="flex gap-3">
