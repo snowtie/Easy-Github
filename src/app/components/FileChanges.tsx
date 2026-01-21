@@ -27,6 +27,9 @@ export function FileChanges() {
   const [commitDescription, setCommitDescription] = useState("");
   const [showExplanation, setShowExplanation] = useState(true);
 
+  const PAGE_SIZE = 200;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
   const [activeProjectPath, setActiveProjectPath] = useState<string>(() => localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || "");
   const [activeProjectName, setActiveProjectName] = useState<string>(() => localStorage.getItem(ACTIVE_PROJECT_NAME_KEY) || "");
   const [busy, setBusy] = useState(false);
@@ -52,6 +55,7 @@ export function FileChanges() {
 
     if (!repoPath) {
       setChanges([]);
+      setVisibleCount(PAGE_SIZE);
       refreshInFlightRef.current = false;
       return;
     }
@@ -70,6 +74,7 @@ export function FileChanges() {
       }));
 
       setChanges(normalized);
+      setVisibleCount(Math.min(PAGE_SIZE, normalized.length));
     } catch (err: any) {
       toast.error(err?.message || "변경사항 조회에 실패했습니다");
     } finally {
@@ -119,6 +124,7 @@ export function FileChanges() {
   };
 
   const toggleAllFiles = () => {
+    // 대량 파일 처리 시에도 UX를 유지하기 위해 전체 선택을 유지한다.
     const allSelected = changes.every(c => c.selected);
     setChanges(changes.map(change => ({ ...change, selected: !allSelected })));
   };
@@ -263,6 +269,9 @@ export function FileChanges() {
     [changes]
   );
 
+  const visibleChanges = useMemo(() => changes.slice(0, visibleCount), [changes, visibleCount]);
+  const remainingChanges = Math.max(0, changes.length - visibleCount);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* File List */}
@@ -350,55 +359,71 @@ export function FileChanges() {
                 <p className="font-semibold">현재 프로젝트가 선택되지 않았어요</p>
                 <p className="text-sm mt-2">"프로젝트" 탭에서 Clone 후 상태 버튼을 눌러 선택해주세요.</p>
               </div>
-            ) : changes.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>변경된 파일이 없습니다</p>
-                <p className="text-sm mt-2">모든 변경사항이 커밋되었습니다</p>
-              </div>
-            ) : (
-              changes.map((change) => (
-                <div
-                  key={change.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                    change.selected ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900" : "bg-card border-border"
-                  }`}
-                >
-                  <Checkbox
-                    checked={change.selected}
-                    onCheckedChange={() => toggleFileSelection(change.id)}
-                  />
+             ) : changes.length === 0 ? (
+               <div className="text-center py-12 text-muted-foreground">
+                 <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                 <p>변경된 파일이 없습니다</p>
+                 <p className="text-sm mt-2">모든 변경사항이 커밋되었습니다</p>
+               </div>
+             ) : (
+               <>
+                 {visibleChanges.map((change) => (
+                   <div
+                     key={change.id}
+                     className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                       change.selected ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900" : "bg-card border-border"
+                     }`}
+                   >
+                     <Checkbox
+                       checked={change.selected}
+                       onCheckedChange={() => toggleFileSelection(change.id)}
+                     />
+ 
+                     <div className="flex-1 flex items-center gap-3">
+                       {getFileIcon(change.type)}
+                       <div className="flex-1">
+                         <p className="font-mono text-sm font-medium">{change.path}</p>
+                         <div className="flex items-center gap-2 mt-1">
+                           {getTypeBadge(change.type)}
+                           {change.staged && (
+                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                               스테이징됨
+                             </Badge>
+                           )}
+                           <span className="text-xs text-green-600">+{change.additions}</span>
+                           <span className="text-xs text-red-600">-{change.deletions}</span>
+                         </div>
+                       </div>
+                     </div>
+ 
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => {
+                         // 파일 선택과는 별개로 diff를 보고 싶을 수 있어 별도 버튼 제공
+                         setSelectedDiffFile(change.path);
+                       }}
+                     >
+                       <FileText className="w-4 h-4" />
+                     </Button>
+                   </div>
+                 ))}
+                 {remainingChanges > 0 ? (
+                   <div className="flex items-center justify-between rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                     <span>아직 {remainingChanges.toLocaleString()}개 파일이 더 있습니다.</span>
+                     <Button
+                       type="button"
+                       variant="outline"
+                       size="sm"
+                       onClick={() => setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, changes.length))}
+                     >
+                       더 보기
+                     </Button>
+                   </div>
+                 ) : null}
+               </>
+             )}
 
-                  <div className="flex-1 flex items-center gap-3">
-                    {getFileIcon(change.type)}
-                    <div className="flex-1">
-                      <p className="font-mono text-sm font-medium">{change.path}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getTypeBadge(change.type)}
-                        {change.staged && (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                            스테이징됨
-                          </Badge>
-                        )}
-                        <span className="text-xs text-green-600">+{change.additions}</span>
-                        <span className="text-xs text-red-600">-{change.deletions}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      // 파일 선택과는 별개로 diff를 보고 싶을 수 있어 별도 버튼 제공
-                      setSelectedDiffFile(change.path);
-                    }}
-                  >
-                    <FileText className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))
-            )}
           </CardContent>
         </Card>
 

@@ -759,14 +759,15 @@ export function ProjectOverview() {
                                   checked={task.checked}
                                   disabled={isUpdating}
                                   onCheckedChange={(value) => handleTodoToggle(doc.filePath, index, Boolean(value))}
+                                  className="mt-0.5"
                                 />
                                 <span
-                                  className={`text-sm ${task.checked ? "line-through text-muted-foreground" : ""}`}
+                                  className={`text-sm leading-relaxed ${task.checked ? "line-through text-muted-foreground" : ""}`}
                                 >
                                   {task.text}
                                 </span>
                                 {task.checked ? (
-                                  <Badge variant="outline" className="text-[10px]">완료</Badge>
+                                  <Badge variant="outline" className="text-[10px] mt-0.5 self-start">완료</Badge>
                                 ) : null}
                               </div>
                             );
