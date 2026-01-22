@@ -93,7 +93,9 @@ contextBridge.exposeInMainWorld('easyGithub', {
   todos: {
     list: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.TODOS.LIST, repoPath),
     update: (repoPath: string, filePath: string, taskIndex: number, checked: boolean) =>
-      ipcRenderer.invoke(IPC_CHANNELS.TODOS.UPDATE, repoPath, filePath, taskIndex, checked)
+      ipcRenderer.invoke(IPC_CHANNELS.TODOS.UPDATE, repoPath, filePath, taskIndex, checked),
+    add: (repoPath: string, filePath: string, text: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TODOS.ADD, repoPath, filePath, text)
   },
   store: {
     getLearningProgress: () => ipcRenderer.invoke(IPC_CHANNELS.STORE.GET_LEARNING_PROGRESS),

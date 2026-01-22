@@ -58,7 +58,8 @@ export const IPC_CHANNELS = {
   },
   TODOS: {
     LIST: 'todos:list',
-    UPDATE: 'todos:update'
+    UPDATE: 'todos:update',
+    ADD: 'todos:add'
   },
   STORE: {
     GET_LEARNING_PROGRESS: 'store:get-learning-progress',

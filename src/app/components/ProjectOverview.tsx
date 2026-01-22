@@ -60,6 +60,11 @@ export function ProjectOverview() {
     { fileName: string; filePath: string; tasks: { checked: boolean; text: string }[] }[]
   >([]);
   const [todoUpdatingKey, setTodoUpdatingKey] = useState<string | null>(null);
+  const [todoInputByDoc, setTodoInputByDoc] = useState<Record<string, string>>({});
+  const [todoAddingKey, setTodoAddingKey] = useState<string | null>(null);
+  const [todoNewFileName, setTodoNewFileName] = useState("");
+  const [todoNewTaskText, setTodoNewTaskText] = useState("");
+  const [todoCreatingKey, setTodoCreatingKey] = useState<string | null>(null);
 
   const loadProjects = async () => {
     if (!window.easyGithub) return;
@@ -107,7 +112,21 @@ export function ProjectOverview() {
       setTodoUserName(result?.userName ?? null);
       setTodoMatchKeys(Array.isArray(result?.matchKeys) ? result.matchKeys : []);
       setTodoTodosDirExists(Boolean(result?.todosDirExists));
-      setTodoDocs(Array.isArray(result?.docs) ? result.docs : []);
+      const nextDocs = Array.isArray(result?.docs) ? result.docs : [];
+      setTodoDocs(nextDocs);
+
+      setTodoInputByDoc((prev) => {
+        const nextInputs: Record<string, string> = {};
+        for (const doc of nextDocs) {
+          const existing = prev[doc.filePath];
+          if (typeof existing === "string") {
+            nextInputs[doc.filePath] = existing;
+          } else {
+            nextInputs[doc.filePath] = "";
+          }
+        }
+        return nextInputs;
+      });
     } catch (err: any) {
       setTodoError(err?.message || "TODO 목록을 불러오지 못했습니다");
       setTodoDocs([]);
@@ -141,6 +160,96 @@ export function ProjectOverview() {
       toast.error(err?.message || "TODO 업데이트에 실패했습니다");
     } finally {
       setTodoUpdatingKey(null);
+    }
+  };
+
+  const handleTodoAdd = async (docFilePath: string) => {
+    if (!window.easyGithub) return;
+
+    if (!activeProjectPath) {
+      toast.error("프로젝트가 선택되어 있지 않습니다");
+      return;
+    }
+
+    const text = (todoInputByDoc[docFilePath] ?? "").trim();
+    if (!text) {
+      toast.error("추가할 TODO 내용을 입력해주세요");
+      return;
+    }
+
+    const addKey = `${docFilePath}:add`;
+    setTodoAddingKey(addKey);
+
+    try {
+      const result = await window.easyGithub.todos.add(activeProjectPath, docFilePath, text);
+      if (!result.success) {
+        toast.error("TODO 추가에 실패했습니다");
+        return;
+      }
+
+      setTodoDocs((prev) =>
+        prev.map((doc) => (doc.filePath === docFilePath ? { ...doc, tasks: result.tasks } : doc))
+      );
+      setTodoInputByDoc((prev) => ({ ...prev, [docFilePath]: "" }));
+    } catch (err: any) {
+      toast.error(err?.message || "TODO 추가에 실패했습니다");
+    } finally {
+      setTodoAddingKey(null);
+    }
+  };
+
+  const handleTodoCreateFile = async () => {
+    if (!window.easyGithub) return;
+
+    if (!activeProjectPath) {
+      toast.error("프로젝트가 선택되어 있지 않습니다");
+      return;
+    }
+
+    const fileBaseName = todoNewFileName.trim();
+    const taskText = todoNewTaskText.trim();
+
+    if (!fileBaseName) {
+      toast.error("새 TODO 파일 이름을 입력해주세요");
+      return;
+    }
+
+    if (!/^[\w\d._-]+$/.test(fileBaseName)) {
+      toast.error("파일 이름에는 영문/숫자/._- 만 사용할 수 있습니다");
+      return;
+    }
+
+    if (!taskText) {
+      toast.error("첫 TODO 내용을 입력해주세요");
+      return;
+    }
+
+    const fileName = fileBaseName.endsWith(".md") || fileBaseName.endsWith(".txt")
+      ? fileBaseName
+      : `${fileBaseName}.md`;
+    const normalizedRepoPath = activeProjectPath.replace(/[\\/]+$/, "");
+    const filePath = `${normalizedRepoPath}/todos/${fileName}`;
+
+    setTodoCreatingKey(filePath);
+
+    try {
+      const result = await window.easyGithub.todos.add(activeProjectPath, filePath, taskText);
+      if (!result.success) {
+        toast.error("TODO 파일 생성에 실패했습니다");
+        return;
+      }
+
+      setTodoDocs((prev) => [
+        { fileName, filePath, tasks: result.tasks },
+        ...prev
+      ]);
+      setTodoInputByDoc((prev) => ({ ...prev, [filePath]: "" }));
+      setTodoNewFileName("");
+      setTodoNewTaskText("");
+    } catch (err: any) {
+      toast.error(err?.message || "TODO 파일 생성에 실패했습니다");
+    } finally {
+      setTodoCreatingKey(null);
     }
   };
 
@@ -752,7 +861,7 @@ export function ProjectOverview() {
                           {doc.tasks.map((task, index) => {
                             const updateKey = `${doc.filePath}:${index}`;
                             const isUpdating = todoUpdatingKey === updateKey;
-
+ 
                             return (
                               <div key={updateKey} className="flex items-start gap-2">
                                 <Checkbox
@@ -774,12 +883,70 @@ export function ProjectOverview() {
                           })}
                         </div>
                       )}
+                      <div className="mt-3 flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <Input
+                            value={todoInputByDoc[doc.filePath] ?? ""}
+                            placeholder="새 TODO를 입력하세요"
+                            onChange={(event) =>
+                              setTodoInputByDoc((prev) => ({ ...prev, [doc.filePath]: event.target.value }))
+                            }
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => handleTodoAdd(doc.filePath)}
+                            disabled={todoAddingKey === `${doc.filePath}:add`}
+                          >
+                            추가
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          새 항목은 <code className="font-mono">- [ ]</code> 형식으로 저장됩니다.
+                        </p>
+                      </div>
+
                     </CardContent>
                   </Card>
                 );
               })}
             </div>
           )}
+
+          {activeProjectPath ? (
+            <Card className="border border-dashed">
+              <CardHeader className="py-4">
+                <CardTitle className="text-sm">새 TODO 파일 만들기</CardTitle>
+                <CardDescription className="text-xs">
+                  todos 폴더에 새 문서를 생성하고 첫 TODO를 추가합니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Label className="text-xs">파일 이름</Label>
+                  <Input
+                    placeholder="예: my-todo.md"
+                    value={todoNewFileName}
+                    onChange={(event) => setTodoNewFileName(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">첫 TODO</Label>
+                  <Input
+                    placeholder="예: 로그인 테스트 정리"
+                    value={todoNewTaskText}
+                    onChange={(event) => setTodoNewTaskText(event.target.value)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleTodoCreateFile}
+                  disabled={todoCreatingKey !== null}
+                >
+                  새 파일 생성
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
         </CardContent>
       </Card>
 

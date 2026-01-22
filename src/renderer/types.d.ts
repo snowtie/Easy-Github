@@ -76,6 +76,10 @@ declare global {
           success: boolean
           tasks: { checked: boolean; text: string }[]
         }>
+        add: (repoPath: string, filePath: string, text: string) => Promise<{
+          success: boolean
+          tasks: { checked: boolean; text: string }[]
+        }>
       }
       store: {
         getLearningProgress: () => Promise<any>

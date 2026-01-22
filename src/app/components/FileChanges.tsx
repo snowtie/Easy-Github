@@ -5,6 +5,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Badge } from "@/app/components/ui/badge";
 import { Checkbox } from "@/app/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { FileText, FilePlus, FileX, FileEdit, GitCommit, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +27,9 @@ export function FileChanges() {
   const [commitMessage, setCommitMessage] = useState("");
   const [commitDescription, setCommitDescription] = useState("");
   const [showExplanation, setShowExplanation] = useState(true);
+
+  const [branchList, setBranchList] = useState<{ current: string; all: { name: string; current: boolean }[] } | null>(null);
+  const [branchBusy, setBranchBusy] = useState(false);
 
   const PAGE_SIZE = 200;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -55,6 +59,7 @@ export function FileChanges() {
 
     if (!repoPath) {
       setChanges([]);
+      setBranchList(null);
       setVisibleCount(PAGE_SIZE);
       refreshInFlightRef.current = false;
       return;
@@ -62,7 +67,10 @@ export function FileChanges() {
 
     setBusy(true);
     try {
-      const rawChanges = await window.easyGithub.git.changes(repoPath);
+      const [rawChanges, branches] = await Promise.all([
+        window.easyGithub.git.changes(repoPath),
+        window.easyGithub.git.branches(repoPath)
+      ]);
       const normalized: FileChange[] = (rawChanges as any[]).map((c) => ({
         id: c.path,
         path: c.path,
@@ -74,6 +82,7 @@ export function FileChanges() {
       }));
 
       setChanges(normalized);
+      setBranchList(branches ?? null);
       setVisibleCount(Math.min(PAGE_SIZE, normalized.length));
     } catch (err: any) {
       toast.error(err?.message || "변경사항 조회에 실패했습니다");
@@ -127,6 +136,43 @@ export function FileChanges() {
     // 대량 파일 처리 시에도 UX를 유지하기 위해 전체 선택을 유지한다.
     const allSelected = changes.every(c => c.selected);
     setChanges(changes.map(change => ({ ...change, selected: !allSelected })));
+  };
+
+  const handleBranchCheckout = async (branchName: string) => {
+    if (!window.easyGithub) return;
+    if (!activeProjectPath) {
+      toast.error("먼저 '프로젝트' 탭에서 저장소를 선택/Clone 해주세요");
+      return;
+    }
+
+    if (branchName === branchList?.current) return;
+
+    setBranchBusy(true);
+    try {
+      const status = await window.easyGithub.git.status(activeProjectPath);
+      const hasChanges =
+        Number(status?.modified ?? 0) +
+          Number(status?.untracked ?? 0) +
+          Number(status?.deleted ?? 0) >
+        0;
+
+      if (hasChanges) {
+        const confirmSwitch = window.confirm("미커밋 변경사항이 있습니다. 브랜치를 전환하시겠습니까?");
+        if (!confirmSwitch) {
+          return;
+        }
+      }
+
+      await window.easyGithub.git.checkoutBranch(activeProjectPath, branchName);
+      const updated = await window.easyGithub.git.branches(activeProjectPath);
+      setBranchList(updated ?? null);
+      await refresh();
+      toast.success(`브랜치 ${branchName}로 전환되었습니다`);
+    } catch (err: any) {
+      toast.error(err?.message || "브랜치 전환에 실패했습니다");
+    } finally {
+      setBranchBusy(false);
+    }
   };
 
   const handleCommit = async () => {
@@ -342,7 +388,26 @@ export function FileChanges() {
                   ) : null}
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">브랜치</span>
+                  <Select
+                    value={branchList?.current ?? ""}
+                    onValueChange={handleBranchCheckout}
+                    disabled={busy || branchBusy || !branchList}
+                  >
+                    <SelectTrigger className="h-8 w-40">
+                      <SelectValue placeholder="브랜치 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(branchList?.all ?? []).map((branch) => (
+                        <SelectItem key={branch.name} value={branch.name}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button variant="outline" size="sm" onClick={refresh} disabled={busy}>
                   새로고침
                 </Button>

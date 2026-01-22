@@ -91,6 +91,16 @@ async function isDirectoryPath(targetPath: string): Promise<boolean> {
   }
 }
 
+function ensureTodoTextLine(rawText: string): string {
+  const trimmed = rawText.trim()
+  if (!trimmed) {
+    throw new Error('TODO 내용을 입력해주세요')
+  }
+
+  if (trimmed.startsWith('- [ ]')) return trimmed
+  return `- [ ] ${trimmed}`
+}
+
 async function copyDirectoryRecursive(sourceDir: string, targetDir: string, mode: CloneMode): Promise<void> {
   const entries = await fs.readdir(sourceDir, { withFileTypes: true })
 
@@ -490,6 +500,11 @@ export interface TodoDocSummary {
   tasks: TodoTask[]
 }
 
+export interface TodoAddResult {
+  success: boolean
+  tasks: TodoTask[]
+}
+
 export interface UserTodoListResult {
   // git config(user.name)에서 읽어온 값(없을 수 있음)
   userName: string | null
@@ -608,6 +623,25 @@ export async function updateTodoTaskInFile(
 
   const nextContent = lines.join('\n')
   await fs.writeFile(filePath, nextContent, 'utf-8')
+  return { success: true, tasks: extractTodoTasksFromText(nextContent) }
+}
+
+export async function addTodoTaskToFile(filePath: string, rawText: string): Promise<TodoAddResult> {
+  const nextLine = ensureTodoTextLine(rawText)
+  const content = await fs.readFile(filePath, 'utf-8').catch((err: any) => {
+    if (err?.code === 'ENOENT') return ''
+    throw err
+  })
+
+  const trimmedContent = content.replace(/\s+$/, '')
+  const hasContent = trimmedContent.length > 0
+  const normalizedLine = nextLine.trim()
+
+  // TODO 라인은 항상 마지막에 추가한다.
+  const nextContent = hasContent ? `${trimmedContent}\n${normalizedLine}\n` : `${normalizedLine}\n`
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
+  await fs.writeFile(filePath, nextContent, 'utf-8')
+
   return { success: true, tasks: extractTodoTasksFromText(nextContent) }
 }
 

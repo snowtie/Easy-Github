@@ -40,7 +40,8 @@ import {
   mergeBranch,
   getOriginUrl,
   listUserTodos,
-  updateTodoTaskInFile
+  updateTodoTaskInFile,
+  addTodoTaskToFile
 } from '../services/gitService'
 
 export function registerIpcHandlers() {
@@ -389,4 +390,19 @@ export function registerIpcHandlers() {
       return await updateTodoTaskInFile(resolvedFilePath, taskIndex, checked)
     }
   )
+
+  ipcMain.handle(IPC_CHANNELS.TODOS.ADD, async (event, repoPath: string, filePath: string, text: string) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+
+    // 보안: repoPath/todos 내부 파일만 수정하도록 제한한다.
+    const resolvedTodosDir = path.join(repoPath, 'todos')
+    const resolvedFilePath = path.resolve(filePath)
+    const normalizedTodosDir = path.resolve(resolvedTodosDir)
+
+    if (!resolvedFilePath.startsWith(normalizedTodosDir + path.sep)) {
+      throw new Error('TODO 파일 경로가 올바르지 않습니다')
+    }
+
+    return await addTodoTaskToFile(resolvedFilePath, text)
+  })
 }
