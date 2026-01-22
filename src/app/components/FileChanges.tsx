@@ -134,8 +134,7 @@ export function FileChanges() {
 
   const toggleAllFiles = () => {
     // 대량 파일 처리 시에도 UX를 유지하기 위해 전체 선택을 유지한다.
-    const allSelected = changes.every(c => c.selected);
-    setChanges(changes.map(change => ({ ...change, selected: !allSelected })));
+    setChanges((prev) => prev.map((change) => ({ ...change, selected: !allSelected })));
   };
 
   const handleBranchCheckout = async (branchName: string) => {
@@ -157,13 +156,19 @@ export function FileChanges() {
         0;
 
       if (hasChanges) {
-        const confirmSwitch = window.confirm("미커밋 변경사항이 있습니다. 브랜치를 전환하시겠습니까?");
+        const confirmSwitch = window.confirm(
+          "미커밋 변경사항이 있습니다.\n브랜치를 전환하면 커밋 메시지와 선택 상태가 초기화됩니다. 계속하시겠습니까?"
+        );
         if (!confirmSwitch) {
           return;
         }
       }
 
       await window.easyGithub.git.checkoutBranch(activeProjectPath, branchName);
+      setCommitMessage("");
+      setCommitDescription("");
+      setSelectedDiffFile("");
+      setDiffText("");
       const updated = await window.easyGithub.git.branches(activeProjectPath);
       setBranchList(updated ?? null);
       await refresh();
@@ -314,6 +319,7 @@ export function FileChanges() {
     () => changes.filter((c) => c.selected).reduce((sum, c) => sum + c.deletions, 0),
     [changes]
   );
+  const allSelected = useMemo(() => changes.length > 0 && changes.every((c) => c.selected), [changes]);
 
   const visibleChanges = useMemo(() => changes.slice(0, visibleCount), [changes, visibleCount]);
   const remainingChanges = Math.max(0, changes.length - visibleCount);
@@ -412,7 +418,7 @@ export function FileChanges() {
                   새로고침
                 </Button>
                 <Button variant="outline" size="sm" onClick={toggleAllFiles} disabled={busy}>
-                  {changes.length > 0 && changes.every((c) => c.selected) ? "전체 해제" : "전체 선택"}
+                  {allSelected ? "전체 해제" : "전체 선택"}
                 </Button>
               </div>
             </div>

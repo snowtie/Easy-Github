@@ -332,23 +332,24 @@ export function ProjectOverview() {
         return;
       }
 
-      if (type === "progress") {
-        const percent = Number(payload?.info?.percent ?? 0);
-        setUpdateState((prev) => ({
-          ...prev,
-          stage: "downloading",
-          progressPercent: Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) : 0
-        }));
-        setUpdateDialogOpen(true);
-        return;
-      }
+       if (type === "progress") {
+         const percent = Number(payload?.info?.percent ?? 0);
+         setUpdateState((prev) => ({
+           ...prev,
+           stage: "downloading",
+           progressPercent: Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) : 0
+         }));
+         setUpdateDialogOpen(false);
+         return;
+       }
+ 
+       if (type === "downloaded") {
+         const version = String(payload?.info?.version ?? "");
+         setUpdateState((prev) => ({ ...prev, stage: "downloaded", latestVersion: version }));
+         setUpdateDialogOpen(true);
+         return;
+       }
 
-      if (type === "downloaded") {
-        const version = String(payload?.info?.version ?? "");
-        setUpdateState((prev) => ({ ...prev, stage: "downloaded", latestVersion: version }));
-        setUpdateDialogOpen(true);
-        return;
-      }
 
       if (type === "error") {
         const message = String(payload?.info?.message ?? "업데이트 중 오류가 발생했습니다");
@@ -419,6 +420,7 @@ export function ProjectOverview() {
 
     setUpdateBusy(true);
     setUpdateState((prev) => ({ ...prev, stage: "downloading", progressPercent: 0 }));
+    setUpdateDialogOpen(false);
 
     try {
       const result = await window.easyGithub.app.downloadUpdate();
@@ -431,6 +433,7 @@ export function ProjectOverview() {
     } catch (err: any) {
       toast.error(err?.message || "업데이트 다운로드에 실패했습니다");
       setUpdateState({ stage: "error", errorMessage: err?.message || "업데이트 다운로드에 실패했습니다" });
+      setUpdateDialogOpen(true);
     } finally {
       setUpdateBusy(false);
     }
@@ -853,11 +856,12 @@ export function ProjectOverview() {
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0 pb-4">
-                      {doc.tasks.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">할 일 항목(- [ ])이 없습니다.</p>
-                      ) : (
-                        <div className="space-y-2">
+              <CardContent className="pt-0 pb-4 min-h-[120px]">
+                {doc.tasks.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">할 일 항목(- [ ])이 없습니다.</p>
+                ) : (
+                  <div className="space-y-2">
+
                           {doc.tasks.map((task, index) => {
                             const updateKey = `${doc.filePath}:${index}`;
                             const isUpdating = todoUpdatingKey === updateKey;
@@ -1091,10 +1095,19 @@ export function ProjectOverview() {
             </CardContent>
           </Card>
         ) : (
-          projects.map((project) => (
-            <Card key={project.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
+           projects.map((project) => (
+             <Card
+               key={project.id}
+               className={`transition-shadow cursor-pointer ${
+                 activeProjectPath === project.path
+                   ? "border-blue-400 bg-blue-50/80 shadow-lg dark:border-blue-500/70 dark:bg-blue-950/40"
+                   : "hover:shadow-lg"
+               }`}
+               onClick={() => setActiveProject(project.path, project.name)}
+             >
+               <CardContent className="pt-6">
+                 <div className="flex items-start justify-between">
+
                   <div className="flex-1 space-y-4">
                     {/* Project Header */}
                     <div className="flex items-center gap-3">
@@ -1148,20 +1161,27 @@ export function ProjectOverview() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => handleCheckStatus(project.id, project.name, project.path)}
-                        disabled={gitBusy === project.id || gitBusy === "clone"}
-                      >
+                     <div className="flex gap-2">
+                       <Button
+                         size="sm"
+                         variant="default"
+                         onClick={(event) => {
+                           event.stopPropagation();
+                           handleCheckStatus(project.id, project.name, project.path);
+                         }}
+                         disabled={gitBusy === project.id || gitBusy === "clone"}
+                       >
+
                         <RefreshCw className="w-4 h-4 mr-2" />
                         상태
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleFetch(project.id, project.name, project.path)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleFetch(project.id, project.name, project.path);
+                        }}
                         disabled={gitBusy === project.id || gitBusy === "clone"}
                       >
                         Fetch
@@ -1169,7 +1189,10 @@ export function ProjectOverview() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handlePull(project.id, project.name, project.path)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handlePull(project.id, project.name, project.path);
+                        }}
                         disabled={gitBusy === project.id || gitBusy === "clone"}
                       >
                         Pull
@@ -1177,7 +1200,10 @@ export function ProjectOverview() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handlePush(project.id, project.name, project.path)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handlePush(project.id, project.name, project.path);
+                        }}
                         disabled={gitBusy === project.id || gitBusy === "clone"}
                       >
                         Push
@@ -1185,7 +1211,14 @@ export function ProjectOverview() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => (window.easyGithub ? window.easyGithub.app.openExternal(project.url) : window.open(project.url, '_blank'))}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (window.easyGithub) {
+                            window.easyGithub.app.openExternal(project.url);
+                          } else {
+                            window.open(project.url, '_blank');
+                          }
+                        }}
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
                         GitHub
@@ -1194,12 +1227,16 @@ export function ProjectOverview() {
                   </div>
 
                   {/* Remove Button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveProject(project.id, project.name)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleRemoveProject(project.id, project.name);
+                      }}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
