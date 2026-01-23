@@ -27,6 +27,7 @@ import {
   getGitDiff,
   getGitInstallationStatus,
   getGitLog,
+  getGitGraphLog,
   getGitStatusSummary,
   gitCommit,
   pullRepository,
@@ -313,6 +314,11 @@ export function registerIpcHandlers() {
   ipcMain.handle(IPC_CHANNELS.GIT.LOG, async (event, repoPath: string, maxCount: number) => {
     if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
     return await getGitLog(repoPath, maxCount)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GIT.GRAPH_LOG, async (event, repoPath: string, maxCount: number) => {
+    if (!validateIpcSender(event)) throw new Error('IPC sender not allowed')
+    return await getGitGraphLog(repoPath, maxCount)
   })
 
   ipcMain.handle(IPC_CHANNELS.GIT.DIFF, async (event, repoPath: string, filePath?: string) => {

@@ -75,6 +75,8 @@ contextBridge.exposeInMainWorld('easyGithub', {
     commit: (repoPath: string, message: string, author?: { name: string; email: string }) =>
       ipcRenderer.invoke(IPC_CHANNELS.GIT.COMMIT, repoPath, message, author),
     log: (repoPath: string, maxCount: number) => ipcRenderer.invoke(IPC_CHANNELS.GIT.LOG, repoPath, maxCount),
+    graphLog: (repoPath: string, maxCount: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GIT.GRAPH_LOG, repoPath, maxCount),
     diff: (repoPath: string, filePath?: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.DIFF, repoPath, filePath),
 
     branches: (repoPath: string) => ipcRenderer.invoke(IPC_CHANNELS.GIT.BRANCH_LIST, repoPath),

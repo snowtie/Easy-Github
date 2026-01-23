@@ -55,6 +55,15 @@ declare global {
         unstage: (repoPath: string, files: string[]) => Promise<void>
         commit: (repoPath: string, message: string, author?: { name: string; email: string }) => Promise<any>
         log: (repoPath: string, maxCount: number) => Promise<any>
+        graphLog: (repoPath: string, maxCount: number) => Promise<{
+          hash: string
+          message: string
+          authorName: string
+          authorEmail: string
+          date: string
+          parents: string[]
+          refs: string[]
+        }[]>
         diff: (repoPath: string, filePath?: string) => Promise<string>
 
         branches: (repoPath: string) => Promise<any>

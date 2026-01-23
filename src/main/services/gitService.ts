@@ -286,7 +286,24 @@ export async function pullRepository(repoPath: string): Promise<any> {
 export async function pushRepository(repoPath: string): Promise<any> {
   await ensureGitInstalledOrThrow()
   const git = simpleGit(repoPath)
-  return await git.push()
+
+  try {
+    return await git.push()
+  } catch (err: any) {
+    const message = String(err?.message ?? '')
+    if (message.includes('has no upstream branch')) {
+      const status = await git.status()
+      const branchName = String(status?.current ?? '').trim()
+      if (!branchName) {
+        throw err
+      }
+
+      // upstream이 없는 브랜치는 -u 옵션으로 최초 푸시를 시도한다.
+      return await git.push(['-u', 'origin', branchName])
+    }
+
+    throw err
+  }
 }
 
 function mapSimpleGitStatusToType(indexStatus: string, workingStatus: string): GitFileChangeType {
@@ -386,6 +403,46 @@ export async function getGitLog(repoPath: string, maxCount: number): Promise<any
   await ensureGitInstalledOrThrow()
   const git = simpleGit(repoPath)
   return await git.log({ maxCount })
+}
+
+export interface GitGraphNode {
+  hash: string
+  message: string
+  authorName: string
+  authorEmail: string
+  date: string
+  parents: string[]
+  refs: string[]
+}
+
+export async function getGitGraphLog(repoPath: string, maxCount: number): Promise<GitGraphNode[]> {
+  await ensureGitInstalledOrThrow()
+  const git = simpleGit(repoPath)
+  const raw = await git.raw(['log', '--date=iso', `--max-count=${maxCount}`, '--pretty=%H|%P|%an|%ae|%ad|%s|%D'])
+
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => {
+      const [hash, parentsRaw, authorName, authorEmail, date, message, refsRaw] = line.split('|')
+      const parents = parentsRaw ? parentsRaw.split(' ').filter(Boolean) : []
+      const refs = refsRaw
+        ? refsRaw
+            .split(',')
+            .map((ref) => ref.trim())
+            .filter(Boolean)
+        : []
+      return {
+        hash: hash ?? '',
+        message: message ?? '',
+        authorName: authorName ?? '',
+        authorEmail: authorEmail ?? '',
+        date: date ?? '',
+        parents,
+        refs
+      }
+    })
 }
 
 export async function getGitDiff(repoPath: string, filePath?: string): Promise<string> {

@@ -37,7 +37,8 @@ export const IPC_CHANNELS = {
     BRANCH_DELETE: 'git:branch-delete',
     MERGE: 'git:merge',
     ORIGIN_URL: 'git:origin-url',
-    CHECK_INSTALLED: 'git:check-installed'
+    CHECK_INSTALLED: 'git:check-installed',
+    GRAPH_LOG: 'git:graph-log'
   },
   GITHUB: {
     // MVP에서는 인증/사용자 정보부터 연결
