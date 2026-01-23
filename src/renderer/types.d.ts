@@ -10,8 +10,8 @@ declare global {
 
         getAppVersion: () => Promise<string>
 
-        checkForUpdates: () => Promise<{ status: 'disabled' | 'started' }>
-        downloadUpdate: () => Promise<{ status: 'disabled' | 'started' }>
+        checkForUpdates: () => Promise<{ status: 'disabled' | 'started' | 'busy' }>
+        downloadUpdate: () => Promise<{ status: 'disabled' | 'started' | 'busy' }>
         installUpdate: () => Promise<{ status: 'disabled' | 'started' }>
 
         onUpdateEvent: (listener: (payload: any) => void) => () => void

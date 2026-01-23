@@ -4,6 +4,8 @@ import { IPC_CHANNELS } from '@/shared/ipc-channels'
 
 let updaterInitialized = false
 let updateWindow: BrowserWindow | null = null
+let updateCheckInFlight = false
+let updateDownloadInFlight = false
 
 type UpdateEventPayload =
   | { type: 'checking' }
@@ -75,6 +77,26 @@ async function fallbackRestartDialogIfNoUi(): Promise<void> {
   }
 }
 
+function markUpdateCheckStart(): boolean {
+  if (updateCheckInFlight) return false
+  updateCheckInFlight = true
+  return true
+}
+
+function markUpdateCheckEnd(): void {
+  updateCheckInFlight = false
+}
+
+function markUpdateDownloadStart(): boolean {
+  if (updateDownloadInFlight) return false
+  updateDownloadInFlight = true
+  return true
+}
+
+function markUpdateDownloadEnd(): void {
+  updateDownloadInFlight = false
+}
+
 export function setupAutoUpdater(mainWindow: BrowserWindow | null): void {
   // electron-updater는 패키징된 앱(app.isPackaged)에서만 정상 동작한다.
   // 개발 환경에서는 업데이트 메타(app-update.yml)가 없을 수 있으므로 비활성화한다.
@@ -108,6 +130,7 @@ export function setupAutoUpdater(mainWindow: BrowserWindow | null): void {
     })
 
     autoUpdater.on('update-not-available', (info: any) => {
+      markUpdateCheckEnd()
       emitUpdateEvent({ type: 'not-available', info: { version: info?.version ? String(info.version) : undefined } })
     })
 
@@ -124,6 +147,8 @@ export function setupAutoUpdater(mainWindow: BrowserWindow | null): void {
     })
 
     autoUpdater.on('update-downloaded', (info: any) => {
+      markUpdateCheckEnd()
+      markUpdateDownloadEnd()
       emitUpdateEvent({ type: 'downloaded', info: { version: String(info?.version ?? '') } })
 
       // 업데이트 UI가 없다면 최소한의 안내를 제공
@@ -133,6 +158,8 @@ export function setupAutoUpdater(mainWindow: BrowserWindow | null): void {
     })
 
     autoUpdater.on('error', (err: unknown) => {
+      markUpdateCheckEnd()
+      markUpdateDownloadEnd()
       const message = err instanceof Error ? err.message : String(err)
       emitUpdateEvent({ type: 'error', info: { message } })
       console.error('[autoUpdater] error', err)
@@ -150,19 +177,23 @@ export function setupAutoUpdater(mainWindow: BrowserWindow | null): void {
   }
 }
 
-export async function checkForUpdatesManually(mainWindow: BrowserWindow | null): Promise<{ status: 'disabled' | 'started' }>{
+export async function checkForUpdatesManually(mainWindow: BrowserWindow | null): Promise<{ status: 'disabled' | 'started' | 'busy' }>{
   if (!app.isPackaged) return { status: 'disabled' }
 
   setupAutoUpdater(mainWindow)
+  if (!markUpdateCheckStart()) return { status: 'busy' }
+
   await autoUpdater.checkForUpdates()
 
   return { status: 'started' }
 }
 
-export async function downloadUpdateManually(mainWindow: BrowserWindow | null): Promise<{ status: 'disabled' | 'started' }>{
+export async function downloadUpdateManually(mainWindow: BrowserWindow | null): Promise<{ status: 'disabled' | 'started' | 'busy' }>{
   if (!app.isPackaged) return { status: 'disabled' }
 
   setupAutoUpdater(mainWindow)
+  if (!markUpdateDownloadStart()) return { status: 'busy' }
+
   await autoUpdater.downloadUpdate()
 
   return { status: 'started' }

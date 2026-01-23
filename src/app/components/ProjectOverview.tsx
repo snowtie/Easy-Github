@@ -403,6 +403,10 @@ export function ProjectOverview() {
         toast.info("개발 모드에서는 자동 업데이트가 비활성화됩니다", { id: toastId });
         return;
       }
+      if (result.status === "busy") {
+        toast.info("이미 업데이트 확인 중입니다", { id: toastId });
+        return;
+      }
 
       // 결과(업데이트 있음/없음/에러)는 onUpdateEvent로 전달된다.
       toast.dismiss(toastId);
@@ -426,6 +430,10 @@ export function ProjectOverview() {
       const result = await window.easyGithub.app.downloadUpdate();
       if (result.status === "disabled") {
         toast.info("개발 모드에서는 자동 업데이트가 비활성화됩니다");
+        return;
+      }
+      if (result.status === "busy") {
+        toast.info("이미 업데이트를 다운로드 중입니다");
         return;
       }
 
@@ -646,7 +654,7 @@ export function ProjectOverview() {
   return (
     <div className="space-y-6">
       <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
-        <DialogContent>
+        <DialogContent hideOverlay overlayClassName="bg-transparent">
           <DialogHeader>
             <DialogTitle>업데이트</DialogTitle>
             <DialogDescription>
