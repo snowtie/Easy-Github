@@ -18,6 +18,14 @@ declare global {
       }
       auth: {
         setToken: (token: string) => Promise<any>
+        startBrowserLogin: () => Promise<{
+          device_code: string
+          user_code: string
+          verification_uri: string
+          expires_in: number
+          interval: number
+        }>
+        completeBrowserLogin: (deviceCode: string, interval: number, expiresIn: number) => Promise<any>
         logout: () => Promise<void>
         getUser: () => Promise<any | null>
         getTokenStatus: () => Promise<{ authenticated: boolean }>

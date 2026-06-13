@@ -145,6 +145,9 @@ export function installTauriEasyGithubBridge(): void {
     },
     auth: {
       setToken: (token: string) => call("auth_set_token", { token }),
+      startBrowserLogin: () => call("auth_start_browser_login"),
+      completeBrowserLogin: (deviceCode: string, interval: number, expiresIn: number) =>
+        call("auth_complete_browser_login", { device_code: deviceCode, interval, expires_in: expiresIn }),
       logout: () => call("auth_logout"),
       getUser: () => call("auth_get_user"),
       getTokenStatus: () => call("auth_get_token_status")

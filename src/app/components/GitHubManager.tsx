@@ -16,6 +16,8 @@ import {
   FolderGit2,
   LogIn,
   LogOut,
+  Globe,
+  Copy,
   Sun,
   Moon,
   Laptop
@@ -29,6 +31,14 @@ import { toast } from "sonner";
 
 const ACTIVE_PROJECT_PATH_KEY = "activeProjectPath";
 const ACTIVE_PROJECT_NAME_KEY = "activeProjectName";
+
+type BrowserLoginInfo = {
+  device_code: string;
+  user_code: string;
+  verification_uri: string;
+  expires_in: number;
+  interval: number;
+};
 
 function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: string } | null {
   const trimmed = remoteUrl.trim();
@@ -65,6 +75,7 @@ export function GitHubManager() {
 
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
+  const [browserLoginInfo, setBrowserLoginInfo] = useState<BrowserLoginInfo | null>(null);
 
   const lastCountsRef = useRef({ initialized: false, prOpen: 0, issueOpen: 0 });
 
@@ -137,8 +148,8 @@ export function GitHubManager() {
       return;
     }
 
-    // 브라우저 로그인 대신 토큰(PAT) 입력 다이얼로그를 연다.
     setTokenInput("");
+    setBrowserLoginInfo(null);
     setTokenDialogOpen(true);
   };
 
@@ -158,6 +169,40 @@ export function GitHubManager() {
     } finally {
       setAuthBusy(false);
     }
+  };
+
+  const handleBrowserLogin = async () => {
+    if (!window.easyGithub) return;
+
+    setAuthBusy(true);
+    setBrowserLoginInfo(null);
+    try {
+      const loginInfo = await window.easyGithub.auth.startBrowserLogin();
+      setBrowserLoginInfo(loginInfo);
+      await window.easyGithub.app.openExternal(loginInfo.verification_uri);
+      toast.success("GitHub 사이트가 열렸습니다. 표시된 코드를 입력해주세요.");
+
+      await window.easyGithub.auth.completeBrowserLogin(
+        loginInfo.device_code,
+        loginInfo.interval,
+        loginInfo.expires_in
+      );
+      setTokenDialogOpen(false);
+      setTokenInput("");
+      setBrowserLoginInfo(null);
+      await refreshAuth();
+      toast.success("사이트 로그인 완료!");
+    } catch (err: any) {
+      toast.error(err?.message || "사이트 로그인에 실패했습니다");
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleCopyBrowserCode = async () => {
+    if (!browserLoginInfo) return;
+    await navigator.clipboard.writeText(browserLoginInfo.user_code);
+    toast.success("로그인 코드가 복사되었습니다");
   };
 
   useEffect(() => {
@@ -292,19 +337,57 @@ export function GitHubManager() {
       <Dialog
         open={tokenDialogOpen}
         onOpenChange={(open) => {
+          if (!open && authBusy) return;
           setTokenDialogOpen(open);
-          if (!open) setTokenInput("");
+          if (!open) {
+            setTokenInput("");
+            setBrowserLoginInfo(null);
+          }
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>GitHub 토큰으로 로그인</DialogTitle>
+            <DialogTitle>GitHub 로그인</DialogTitle>
             <DialogDescription>
-              토큰은 PC 안에서만 암호화 저장되며, 브라우저 로그인을 사용하지 않습니다.
+              사이트 로그인 또는 Personal Access Token으로 로그인할 수 있습니다. 토큰은 PC 안에서만 암호화 저장됩니다.
             </DialogDescription>
           </DialogHeader>
 
+          <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4 dark:border-[#30363d] dark:bg-[#15181e]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">사이트로 로그인</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  GitHub 사이트에서 승인하면 앱에 토큰이 저장됩니다.
+                </p>
+              </div>
+              <Button type="button" onClick={() => void handleBrowserLogin()} disabled={authBusy}>
+                <Globe className="mr-2 h-4 w-4" />
+                사이트로 로그인
+              </Button>
+            </div>
+            {browserLoginInfo ? (
+              <div className="mt-4 rounded-md border border-[#d8dee4] bg-white p-3 dark:border-[#30363d] dark:bg-[#0d1117]">
+                <p className="text-xs text-muted-foreground">GitHub 화면에 이 코드를 입력하세요.</p>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <code className="rounded bg-[#f6f8fa] px-3 py-2 font-mono text-lg font-semibold tracking-widest dark:bg-[#15181e]">
+                    {browserLoginInfo.user_code}
+                  </code>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void handleCopyBrowserCode()}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    복사
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[#d8dee4] dark:bg-[#30363d]" />
+              <span className="text-xs text-muted-foreground">또는 토큰으로 로그인</span>
+              <div className="h-px flex-1 bg-[#d8dee4] dark:bg-[#30363d]" />
+            </div>
             <Input
               type="password"
               placeholder="GitHub Personal Access Token (PAT)"
@@ -317,6 +400,7 @@ export function GitHubManager() {
                 }
               }}
               autoFocus
+              disabled={authBusy}
             />
             <p className="text-xs text-muted-foreground">
               필요 권한 예시: private repo 사용 시 <code className="px-1">repo</code>, 공개 repo만이면 최소 권한으로도 동작합니다.
@@ -329,6 +413,7 @@ export function GitHubManager() {
                 type="button"
                 variant="outline"
                 onClick={() => window.easyGithub?.app.openExternal("https://github.com/settings/tokens")}
+                disabled={authBusy}
               >
                 토큰 만들기
               </Button>
@@ -385,7 +470,7 @@ export function GitHubManager() {
                   ) : (
                     <Button size="sm" onClick={handleLogin} disabled={authBusy}>
                       <LogIn className="mr-2 h-4 w-4" />
-                      토큰 로그인
+                      로그인
                     </Button>
                   )}
                 </div>

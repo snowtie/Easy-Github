@@ -858,6 +858,8 @@ fn main() {
             auth_commands::auth_logout,
             auth_commands::auth_get_user,
             auth_commands::auth_set_token,
+            auth_commands::auth_start_browser_login,
+            auth_commands::auth_complete_browser_login,
             store_commands::store_get_projects,
             store_commands::store_save_projects,
             store_commands::store_get_learning_progress,
