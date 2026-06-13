@@ -154,26 +154,25 @@ export function CommitHistory() {
   }, [commits]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Guide Card */}
       {showGuide && (
-        <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-purple-900 dark:text-purple-100 flex items-center gap-2">
-                📖 커밋 히스토리란?
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2">
+                커밋 히스토리란?
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowGuide(false)}
-                className="text-purple-700 dark:text-purple-200"
               >
                 닫기
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 text-purple-900 dark:text-purple-100">
+          <CardContent className="space-y-3 pt-4">
             <p className="font-semibold">프로젝트의 타임라인이에요!</p>
             <div className="space-y-2 text-sm">
               <p>• <strong>누가</strong> 코드를 바꿨는지</p>
@@ -181,9 +180,9 @@ export function CommitHistory() {
               <p>• <strong>무엇을</strong> 바꿨는지</p>
               <p>• <strong>왜</strong> 바꿨는지 (커밋 메시지)</p>
             </div>
-            <div className="bg-card/60 p-3 rounded-lg mt-3">
+            <div className="mt-3 rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-3 dark:border-[#30363d] dark:bg-[#15181e]">
               <p className="text-xs">
-                💡 <strong>활용법:</strong> 버그가 언제 생겼는지 찾거나, 팀원들의 작업을 확인하거나, 
+                <strong>활용법:</strong> 버그가 언제 생겼는지 찾거나, 팀원들의 작업을 확인하거나,
                 이전 버전으로 되돌릴 때 사용해요!
               </p>
             </div>
@@ -192,8 +191,8 @@ export function CommitHistory() {
       )}
 
       {/* Header with Search and Filters */}
-        <Card>
-          <CardHeader>
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
             <CardTitle>커밋 히스토리</CardTitle>
             <CardDescription>
               {activeProjectName ? (
@@ -204,13 +203,13 @@ export function CommitHistory() {
                 "현재 프로젝트가 선택되지 않았습니다"
               )}
               {activeProjectPath ? (
-                <span className="block text-xs font-mono mt-1">{activeProjectPath}</span>
+                <span className="mt-1 block truncate font-mono text-xs">{activeProjectPath}</span>
               ) : null}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
           {/* Search */}
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
               <Input
@@ -243,17 +242,17 @@ export function CommitHistory() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-600">{filteredCommits.length}</p>
               <p className="text-sm text-muted-foreground mt-1">총 커밋</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-green-600">
                 +{filteredCommits.reduce((sum, c) => sum + c.additions, 0)}
@@ -262,8 +261,8 @@ export function CommitHistory() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-red-600">
                 -{filteredCommits.reduce((sum, c) => sum + c.deletions, 0)}
@@ -272,8 +271,8 @@ export function CommitHistory() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-purple-600">
                 {filteredCommits.reduce((sum, c) => sum + c.filesChanged, 0)}
@@ -287,7 +286,7 @@ export function CommitHistory() {
       {/* Commit List */}
       <div className="space-y-4">
         {!activeProjectPath ? (
-          <Card>
+          <Card className="rounded-md border-dashed border-[#d8dee4] dark:border-[#30363d]">
             <CardContent className="py-12 text-center text-muted-foreground">
               <GitCommit className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="font-semibold">현재 프로젝트가 선택되지 않았어요</p>
@@ -295,7 +294,7 @@ export function CommitHistory() {
             </CardContent>
           </Card>
         ) : filteredCommits.length === 0 ? (
-          <Card>
+          <Card className="rounded-md border-dashed border-[#d8dee4] dark:border-[#30363d]">
             <CardContent className="py-12 text-center text-muted-foreground">
               <GitCommit className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>검색 결과가 없습니다</p>
@@ -303,13 +302,13 @@ export function CommitHistory() {
           </Card>
         ) : (
           filteredCommits.map((commit, index) => (
-            <Card key={commit.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
+            <Card key={commit.id} className="rounded-md border-[#d8dee4] transition-colors hover:border-[#8c959f] dark:border-[#30363d] dark:hover:border-[#8b949e]">
+              <CardContent className="p-4">
                 <div className="flex gap-4">
                   {/* Timeline */}
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <GitCommit className="w-5 h-5 text-blue-600" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#ddf4ff]">
+                      <GitCommit className="w-5 h-5 text-[#0969da]" />
                     </div>
                     {index < filteredCommits.length - 1 && (
                       <div className="w-0.5 flex-1 bg-border my-2" />
@@ -317,11 +316,11 @@ export function CommitHistory() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 space-y-3">
+                  <div className="min-w-0 flex-1 space-y-3">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
                           <Badge variant="outline" className={getCommitTypeColor(commit.message)}>
                             {commit.message}
                           </Badge>
@@ -339,7 +338,7 @@ export function CommitHistory() {
                     </div>
 
                     {/* Author and Date */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <Avatar className="w-6 h-6">
                         <AvatarFallback className="text-xs">{commit.authorInitials}</AvatarFallback>
                       </Avatar>
@@ -349,8 +348,8 @@ export function CommitHistory() {
                     </div>
 
                     {/* Stats and Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex items-center gap-4 text-sm">
+                    <div className="flex flex-col gap-3 border-t pt-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <Code className="w-4 h-4 text-muted-foreground/70" />
                           <span className="text-muted-foreground">{commit.filesChanged} files</span>

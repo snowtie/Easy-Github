@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { ProjectOverview } from "@/app/components/ProjectOverview";
 import { CommitHistory } from "@/app/components/CommitHistory";
 import { BranchManager } from "@/app/components/BranchManager";
@@ -15,23 +14,21 @@ import {
   GitPullRequest,
   Bug,
   FolderGit2,
-  HelpCircle,
-  BookOpen,
-  X,
   LogIn,
   LogOut,
-  User,
   Sun,
   Moon,
   Laptop
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Input } from "@/app/components/ui/input";
+import { AppContextPanel } from "@/app/components/layout/AppContextPanel";
+import { AppNavigation } from "@/app/components/layout/AppNavigation";
 import { toast } from "sonner";
 
 const ACTIVE_PROJECT_PATH_KEY = "activeProjectPath";
+const ACTIVE_PROJECT_NAME_KEY = "activeProjectName";
 
 function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: string } | null {
   const trimmed = remoteUrl.trim();
@@ -57,6 +54,8 @@ export function GitHubManager() {
   const [themeMounted, setThemeMounted] = useState(false);
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [activeProjectPath, setActiveProjectPath] = useState(() => localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || "");
+  const [activeProjectName, setActiveProjectName] = useState(() => localStorage.getItem(ACTIVE_PROJECT_NAME_KEY) || "");
   const [showGuide, setShowGuide] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -100,6 +99,21 @@ export function GitHubManager() {
 
   useEffect(() => {
     refreshAuth();
+  }, []);
+
+  useEffect(() => {
+    const syncActiveProject = () => {
+      setActiveProjectPath(localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || "");
+      setActiveProjectName(localStorage.getItem(ACTIVE_PROJECT_NAME_KEY) || "");
+    };
+
+    syncActiveProject();
+    window.addEventListener("easygithub:active-project-changed", syncActiveProject);
+    window.addEventListener("storage", syncActiveProject);
+    return () => {
+      window.removeEventListener("easygithub:active-project-changed", syncActiveProject);
+      window.removeEventListener("storage", syncActiveProject);
+    };
   }, []);
 
   useEffect(() => {
@@ -149,11 +163,7 @@ export function GitHubManager() {
   useEffect(() => {
     if (!window.easyGithub || !authenticated) return;
 
-    let cancelled = false;
-
-    const pollNotifications = async () => {
-      if (cancelled) return;
-
+    const checkNotifications = async () => {
       const repoPath = localStorage.getItem(ACTIVE_PROJECT_PATH_KEY) || "";
       if (!repoPath) return;
 
@@ -189,12 +199,15 @@ export function GitHubManager() {
       }
     };
 
-    pollNotifications();
-    const interval = setInterval(pollNotifications, 120_000);
+    void checkNotifications();
 
+    const handleActiveProjectChanged = () => {
+      void checkNotifications();
+    };
+
+    window.addEventListener("easygithub:active-project-changed", handleActiveProjectChanged);
     return () => {
-      cancelled = true;
-      clearInterval(interval);
+      window.removeEventListener("easygithub:active-project-changed", handleActiveProjectChanged);
     };
   }, [authenticated]);
 
@@ -249,9 +262,30 @@ export function GitHubManager() {
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Laptop;
   const themeLabel = theme === "dark" ? "다크" : theme === "light" ? "라이트" : "시스템";
 
+  const navItems = [
+    { value: "overview", label: "프로젝트", icon: FolderGit2, description: "repo 선택과 TODO" },
+    { value: "changes", label: "변경사항", icon: FileText, description: "stage와 commit" },
+    { value: "commits", label: "커밋", icon: GitCommit, description: "기록 확인" },
+    { value: "branches", label: "브랜치", icon: GitBranch, description: "작업 흐름" },
+    { value: "pulls", label: "리뷰", icon: GitPullRequest, description: "PR 관리" },
+    { value: "issues", label: "이슈", icon: Bug, description: "할 일과 버그" }
+  ];
+
+  const activeNavItem = navItems.find((item) => item.value === activeTab) ?? navItems[0];
+  const ActiveIcon = activeNavItem.icon;
+
+  const renderWorkspace = () => {
+    if (activeTab === "overview") return <ProjectOverview />;
+    if (activeTab === "changes") return <FileChanges />;
+    if (activeTab === "commits") return <CommitHistory />;
+    if (activeTab === "branches") return <BranchManager />;
+    if (activeTab === "pulls") return <PullRequestManager />;
+    if (activeTab === "issues") return <IssueTracker />;
+    return <ProjectOverview />;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-[#f6f8fa] dark:bg-[#0d1117]">
       {/* Beginner Guide Modal */}
       {showGuide && <BeginnerGuide onClose={handleCloseGuide} />}
 
@@ -315,168 +349,67 @@ export function GitHubManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-950 dark:to-blue-900 text-white shadow-lg border-b border-blue-800 dark:border-blue-900">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                <FolderGit2 className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Easy Github</h1>
+      <div className="min-h-screen bg-[#f6f7f9] text-[#1f2328] dark:bg-[#0f1115] dark:text-[#f0f3f6]">
+        <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[248px_minmax(0,1fr)_288px]">
+          <AppNavigation
+            activeTab={activeTab}
+            navItems={navItems}
+            themeLabel={themeLabel}
+            ThemeIcon={ThemeIcon}
+            themeMounted={themeMounted}
+            onSelectTab={setActiveTab}
+            onOpenGuide={() => setShowGuide(true)}
+            onToggleTheme={handleToggleTheme}
+          />
 
-                <p className="text-blue-100 text-sm">쉽고 간단하게 코드를 관리하세요 ✨</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/20 rounded-md px-3 py-1">
-                <User className="w-4 h-4" />
-                <span className="text-sm">
-                  {authenticated ? (authUser?.login ?? "로그인됨") : "로그인 안됨"}
-                </span>
-              </div>
-
-              {authenticated ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  disabled={authBusy}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  로그아웃
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogin}
-                  disabled={authBusy}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  토큰 로그인
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleToggleTheme}
-                disabled={!themeMounted}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                title="테마 변경 (시스템/라이트/다크)"
-              >
-                <ThemeIcon className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">{themeLabel}</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowGuide(true)}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                시작 가이드
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowHelp(!showHelp)}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <HelpCircle className="w-4 h-4 mr-2" />
-                도움말
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6 bg-card shadow-sm">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <FolderGit2 className="w-4 h-4" />
-              <span className="hidden sm:inline">프로젝트</span>
-            </TabsTrigger>
-            <TabsTrigger value="changes" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">변경사항</span>
-            </TabsTrigger>
-            <TabsTrigger value="commits" className="flex items-center gap-2">
-              <GitCommit className="w-4 h-4" />
-              <span className="hidden sm:inline">커밋</span>
-            </TabsTrigger>
-            <TabsTrigger value="branches" className="flex items-center gap-2">
-              <GitBranch className="w-4 h-4" />
-              <span className="hidden sm:inline">브랜치</span>
-            </TabsTrigger>
-            <TabsTrigger value="pulls" className="flex items-center gap-2">
-              <GitPullRequest className="w-4 h-4" />
-              <span className="hidden sm:inline">리뷰</span>
-            </TabsTrigger>
-            <TabsTrigger value="issues" className="flex items-center gap-2">
-              <Bug className="w-4 h-4" />
-              <span className="hidden sm:inline">이슈</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Help Card */}
-            {showHelp && (
-             <Card className="mb-6 border-2 border-blue-500 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5" />
-                    현재 페이지 도움말
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowHelp(false)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+          <main className="min-w-0">
+            <header className="sticky top-0 z-20 border-b border-[#d8dee4] bg-[#f6f7f9]/90 px-5 py-3 backdrop-blur dark:border-[#30363d] dark:bg-[#0f1115]/90">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ActiveIcon className="h-3.5 w-3.5" />
+                    <span>Workspace</span>
+                  </div>
+                  <h1 className="truncate text-xl font-semibold leading-tight tracking-tight">{activeNavItem.label}</h1>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
-                  💡 {tabHelpText[activeTab]}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+                <div className="flex items-center gap-2">
+                  <div className="hidden max-w-[280px] items-center gap-2 rounded-md border border-[#d8dee4] bg-white px-3 py-1.5 text-xs dark:border-[#30363d] dark:bg-[#15181e] md:flex">
+                    <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="truncate">{activeProjectName || "프로젝트 미선택"}</span>
+                  </div>
+                  {authenticated ? (
+                    <Button variant="outline" size="sm" onClick={handleLogout} disabled={authBusy}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      로그아웃
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={handleLogin} disabled={authBusy}>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      토큰 로그인
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </header>
 
-          <TabsContent value="overview">
-            {activeTab === "overview" && <ProjectOverview />}
-          </TabsContent>
+            <div className="mx-auto max-w-[1180px] px-5 py-5">
+              <div className="min-w-0">{renderWorkspace()}</div>
+            </div>
+          </main>
 
-          <TabsContent value="changes">
-            {activeTab === "changes" && <FileChanges />}
-          </TabsContent>
-
-          <TabsContent value="commits">
-            {activeTab === "commits" && <CommitHistory />}
-          </TabsContent>
-
-          <TabsContent value="branches">
-            {activeTab === "branches" && <BranchManager />}
-          </TabsContent>
-
-          <TabsContent value="pulls">
-            {activeTab === "pulls" && <PullRequestManager />}
-          </TabsContent>
-
-          <TabsContent value="issues">
-            {activeTab === "issues" && <IssueTracker />}
-          </TabsContent>
-        </Tabs>
-      </main>
+          <AppContextPanel
+            authenticated={authenticated}
+            authUser={authUser}
+            activeProjectName={activeProjectName}
+            activeProjectPath={activeProjectPath}
+            activeTab={activeTab}
+            activeLabel={activeNavItem.label}
+            showHelp={showHelp}
+            tabHelpText={tabHelpText}
+            onToggleHelp={() => setShowHelp((value) => !value)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

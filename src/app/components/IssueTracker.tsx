@@ -368,25 +368,24 @@ export function IssueTracker() {
 
       {/* Guide Card */}
       {showGuide && (
-        <Card className="border-2 border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-orange-900 dark:text-orange-100 flex items-center gap-2">
-                🐛 이슈(Issue)란?
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2">
+                이슈(Issue)란?
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowGuide(false)}
-                className="text-orange-700 dark:text-orange-200"
               >
                 닫기
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 text-orange-900 dark:text-orange-100">
-            <div className="bg-card/60 p-4 rounded-lg">
-              <p className="font-semibold mb-2">📋 할 일 목록이에요!</p>
+          <CardContent className="space-y-4 pt-4">
+            <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4 dark:border-[#30363d] dark:bg-[#15181e]">
+              <p className="font-semibold mb-2">할 일 목록이에요</p>
               <p className="text-sm">
                 버그, 새로운 기능 아이디어, 질문 등을 기록하고 관리하는 곳이에요.
                 팀 프로젝트의 할 일 목록(To-Do List)이라고 생각하면 돼요!
@@ -396,9 +395,9 @@ export function IssueTracker() {
             <div className="space-y-2 text-sm">
               <p className="font-semibold">이슈의 종류:</p>
               <div className="space-y-1">
-                <p>🐛 <strong>Bug:</strong> 프로그램이 제대로 작동하지 않을 때</p>
-                <p>✨ <strong>Enhancement:</strong> 새로운 기능이나 개선 아이디어</p>
-                <p>❓ <strong>Question:</strong> 궁금한 점이나 논의가 필요할 때</p>
+                <p><strong>Bug:</strong> 프로그램이 제대로 작동하지 않을 때</p>
+                <p><strong>Enhancement:</strong> 새로운 기능이나 개선 아이디어</p>
+                <p><strong>Question:</strong> 궁금한 점이나 논의가 필요할 때</p>
               </div>
             </div>
 
@@ -410,9 +409,9 @@ export function IssueTracker() {
               <p>• 팀원에게 질문할 게 있을 때</p>
             </div>
 
-            <div className="bg-blue-100 p-3 rounded-lg border border-blue-300 dark:bg-blue-950/30 dark:border-blue-900">
-              <p className="text-xs text-blue-900 dark:text-blue-100">
-                <strong>💡 팁:</strong> 이슈를 만들 때는 구체적으로 작성하세요! 
+            <div className="rounded-md border border-[#d8dee4] bg-[#fff8c5] p-3 dark:border-[#3b3320] dark:bg-[#2d260f]">
+              <p className="text-xs text-[#7d4e00] dark:text-[#f0d98c]">
+                <strong>팁:</strong> 이슈를 만들 때는 구체적으로 작성하세요!
                 "버튼이 안 돼요" 보다는 "로그인 버튼 클릭 시 404 에러 발생"이 훨씬 좋아요.
               </p>
             </div>
@@ -421,9 +420,9 @@ export function IssueTracker() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Open</p>
@@ -434,8 +433,8 @@ export function IssueTracker() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Closed</p>
@@ -446,8 +445,8 @@ export function IssueTracker() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Bugs</p>
@@ -460,8 +459,8 @@ export function IssueTracker() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">High Priority</p>
@@ -490,8 +489,8 @@ export function IssueTracker() {
 
       {/* Create Issue Form */}
       {showCreateIssue && (
-        <Card className="border-2 border-blue-500">
-          <CardHeader>
+        <Card className="rounded-md border-[#0969da] shadow-sm">
+          <CardHeader className="border-b border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
             <CardTitle>새 이슈 만들기</CardTitle>
             <CardDescription>버그 리포트, 기능 요청, 질문 등을 작성하세요</CardDescription>
           </CardHeader>
@@ -513,7 +512,7 @@ export function IssueTracker() {
                 rows={4}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button onClick={handleCreateIssue} className="flex-1">
                 생성
               </Button>
@@ -534,10 +533,10 @@ export function IssueTracker() {
       )}
 
        {/* Issue List */}
-       <Card>
-         <CardHeader>
-           <div className="flex items-center justify-between gap-4">
-             <div>
+       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+         <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+             <div className="min-w-0">
                <CardTitle>이슈</CardTitle>
                <CardDescription>
                  {activeProjectPath ? (
@@ -584,24 +583,24 @@ export function IssueTracker() {
                 </div>
               ) : (
                 filteredIssues.map((issue) => (
-                  <Card key={issue.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
+                  <Card key={issue.id} className="rounded-md border-[#d8dee4] transition-colors hover:border-[#8c959f] dark:border-[#30363d] dark:hover:border-[#8b949e]">
+                    <CardContent className="p-4">
                       <div className="space-y-4">
                         <div className="flex items-start gap-4">
                           <div className="mt-1">
                             {getTypeIcon(issue.type)}
                           </div>
-                          <div className="flex-1 space-y-3">
+                          <div className="min-w-0 flex-1 space-y-3">
                             {/* Title */}
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold">{issue.title}</h3>
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                              <div className="min-w-0 flex-1">
+                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                  <h3 className="min-w-0 truncate font-semibold">{issue.title}</h3>
                                   <span className="text-muted-foreground text-sm">#{issue.number}</span>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{issue.description}</p>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex flex-wrap gap-2">
                                 {getTypeBadge(issue.type)}
                                 {getPriorityBadge(issue.priority)}
                               </div>
@@ -622,7 +621,7 @@ export function IssueTracker() {
                             )}
 
                             {/* Meta */}
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-5 h-5">
                                   <AvatarFallback className="text-xs">
@@ -644,11 +643,11 @@ export function IssueTracker() {
                                   </div>
                                 </>
                               )}
-                              <span>•</span>
+                              <span className="hidden sm:inline">•</span>
                               <span>{issue.created}</span>
                               {issue.comments > 0 && (
                                 <>
-                                  <span>•</span>
+                                  <span className="hidden sm:inline">•</span>
                                   <div className="flex items-center gap-1">
                                     <MessageSquare className="w-4 h-4" />
                                     <span>{issue.comments}</span>
@@ -659,7 +658,7 @@ export function IssueTracker() {
 
                             {/* Actions */}
                             {issue.status === "open" && (
-                              <div className="flex gap-2 pt-2">
+                              <div className="flex flex-wrap gap-2 pt-2">
                                 <Button 
                                   size="sm" 
                                   variant="outline"

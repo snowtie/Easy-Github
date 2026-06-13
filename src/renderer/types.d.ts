@@ -69,7 +69,13 @@ declare global {
         branches: (repoPath: string) => Promise<any>
         checkoutBranch: (repoPath: string, branchName: string) => Promise<void>
         createBranch: (repoPath: string, branchName: string, baseBranch: string) => Promise<void>
-        deleteBranch: (repoPath: string, branchName: string) => Promise<void>
+        deleteBranch: (
+          repoPath: string,
+          branchName: string,
+          options?: { force?: boolean; remote?: boolean }
+        ) => Promise<void>
+        renameBranch: (repoPath: string, oldBranchName: string, newBranchName: string) => Promise<void>
+        checkoutRemoteBranch: (repoPath: string, remoteBranchName: string) => Promise<string>
         merge: (repoPath: string, fromBranch: string) => Promise<any>
         originUrl: (repoPath: string) => Promise<string | null>
         checkInstalled: () => Promise<{ installed: boolean; version?: string; error?: string }>

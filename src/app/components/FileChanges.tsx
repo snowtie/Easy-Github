@@ -245,7 +245,7 @@ export function FileChanges() {
 
   const handlePush = async () => {
     if (!window.easyGithub) {
-      toast.error("Electron 환경에서만 Push를 지원합니다");
+      toast.error("Electron 환경에서만 업로드를 지원합니다");
       return;
     }
 
@@ -254,15 +254,15 @@ export function FileChanges() {
       return;
     }
 
-    const toastId = toast.loading("Push 중...");
+    const toastId = toast.loading("업로드 중...");
     setBusy(true);
 
     try {
       await window.easyGithub.git.push(activeProjectPath);
-      toast.success("변경사항이 원격 저장소에 푸시되었습니다!", { id: toastId });
+      toast.success("변경사항이 원격 저장소에 업로드되었습니다!", { id: toastId });
       await refresh();
     } catch (err: any) {
-      toast.error(err?.message || "Push에 실패했습니다", { id: toastId });
+      toast.error(err?.message || "업로드에 실패했습니다", { id: toastId });
     } finally {
       setBusy(false);
     }
@@ -319,50 +319,49 @@ export function FileChanges() {
   const remainingChanges = Math.max(0, changes.length - visibleCount);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
       {/* File List */}
       <div className="lg:col-span-2 space-y-4">
         {/* Explanation Card */}
         {showExplanation && (
-          <Card className="border-2 border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                  📚 변경사항 탭이란?
+          <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+            <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="flex items-center gap-2">
+                  변경사항 탭이란?
                 </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowExplanation(false)}
-                  className="text-blue-700 dark:text-blue-200"
                 >
                   닫기
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3 text-blue-900 dark:text-blue-100">
+            <CardContent className="space-y-3 pt-4">
               <p className="font-semibold">이곳에서 무엇을 하나요?</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="text-lg">1️⃣</span>
+                  <span className="font-mono text-xs text-muted-foreground">01</span>
                   <span><strong>파일 확인:</strong> 어떤 파일을 수정했는지 확인해요</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-lg">2️⃣</span>
+                  <span className="font-mono text-xs text-muted-foreground">02</span>
                   <span><strong>변경사항 선택:</strong> 저장하고 싶은 파일을 선택해요</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-lg">3️⃣</span>
+                  <span className="font-mono text-xs text-muted-foreground">03</span>
                   <span><strong>커밋 메시지 작성:</strong> 무엇을 바꿨는지 메모해요</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-lg">4️⃣</span>
+                  <span className="font-mono text-xs text-muted-foreground">04</span>
                   <span><strong>커밋하기:</strong> 변경사항을 역사에 기록해요!</span>
                 </li>
               </ul>
-              <div className="bg-card/60 p-3 rounded-lg mt-3">
+              <div className="mt-3 rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-3 dark:border-[#30363d] dark:bg-[#15181e]">
                 <p className="text-xs">
-                  💡 <strong>비유하자면:</strong> 게임을 저장하는 것처럼, 코드 작업을 저장하는 거예요. 
+                  <strong>기억할 점:</strong> 게임을 저장하는 것처럼, 코드 작업을 저장하는 거예요.
                   나중에 문제가 생기면 이전 저장 지점으로 돌아갈 수 있어요!
                 </p>
               </div>
@@ -370,10 +369,10 @@ export function FileChanges() {
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0">
                 <CardTitle>변경된 파일</CardTitle>
                 <CardDescription>
                   {activeProjectName ? (
@@ -384,7 +383,7 @@ export function FileChanges() {
                     "현재 프로젝트가 선택되지 않았습니다"
                   )}
                   {activeProjectPath ? (
-                    <span className="block text-xs font-mono mt-1">{activeProjectPath}</span>
+                    <span className="mt-1 block truncate font-mono text-xs">{activeProjectPath}</span>
                   ) : null}
                 </CardDescription>
               </div>
@@ -396,7 +395,7 @@ export function FileChanges() {
                     onValueChange={handleBranchCheckout}
                     disabled={busy || branchBusy || !branchList}
                   >
-                    <SelectTrigger className="h-8 w-40">
+                    <SelectTrigger className="h-8 w-40 max-w-full">
                       <SelectValue placeholder="브랜치 선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -434,24 +433,24 @@ export function FileChanges() {
                <>
                  {visibleChanges.map((change) => (
                    <div
-                     key={change.id}
-                     className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                       change.selected ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900" : "bg-card border-border"
-                     }`}
-                   >
+                      key={change.id}
+                      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                        change.selected ? "border-[#0969da] bg-[#eef6ff] dark:border-[#58a6ff] dark:bg-[#0d263a]" : "border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]"
+                      }`}
+                    >
                      <Checkbox
                        checked={change.selected}
                        onCheckedChange={() => toggleFileSelection(change.id)}
                      />
  
-                     <div className="flex-1 flex items-center gap-3">
-                       {getFileIcon(change.type)}
-                       <div className="flex-1">
-                         <p className="font-mono text-sm font-medium">{change.path}</p>
-                         <div className="flex items-center gap-2 mt-1">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        {getFileIcon(change.type)}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-mono text-sm font-medium">{change.path}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
                            {getTypeBadge(change.type)}
                            {change.staged && (
-                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                              <Badge variant="outline" className="border-[#aceebb] bg-[#dafbe1] text-[#1a7f37]">
                                스테이징됨
                              </Badge>
                            )}
@@ -493,23 +492,23 @@ export function FileChanges() {
         </Card>
 
         {/* Diff Preview */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle>변경 내용 미리보기</CardTitle>
                 <CardDescription>선택한 파일의 변경사항</CardDescription>
               </div>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                읽는 방법 👇
+              <Badge variant="outline" className="border-[#d8dee4] bg-[#f6f8fa] text-[#57606a]">
+                읽는 방법
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Card className="bg-amber-50 border-amber-200">
+            <Card className="rounded-md border-[#d8dee4] bg-[#fff8c5] dark:border-[#3b3320] dark:bg-[#2d260f]">
               <CardContent className="pt-4 pb-4">
-                <div className="space-y-2 text-sm text-amber-900">
-                  <p className="font-semibold mb-2">🔍 Diff 읽는 법:</p>
+                <div className="space-y-2 text-sm text-[#7d4e00] dark:text-[#f0d98c]">
+                  <p className="font-semibold mb-2">Diff 읽는 법</p>
                   <div className="grid grid-cols-1 gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 bg-red-300 rounded"></div>
@@ -527,7 +526,7 @@ export function FileChanges() {
                 </div>
               </CardContent>
             </Card>
-            <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto rounded-md bg-[#0d1117] p-4 font-mono text-sm text-slate-100">
               {!selectedDiffFile ? (
                 <div className="text-muted-foreground/70">
                   오른쪽 목록에서 파일 아이콘(문서 버튼)을 눌러 변경 내용을 확인하세요.
@@ -546,14 +545,14 @@ export function FileChanges() {
 
       {/* Commit Panel */}
       <div className="space-y-4">
-        <Card>
-          <CardHeader>
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
             <CardTitle>커밋 정보</CardTitle>
             <CardDescription>선택한 파일을 커밋합니다</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Stats */}
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-blue-950/20 dark:to-blue-900/10 dark:border-blue-900">
+            <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
               <CardContent className="pt-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center">
@@ -573,9 +572,9 @@ export function FileChanges() {
             </Card>
 
             {/* Tips */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">💡 커밋 메시지 팁</CardTitle>
+            <Card className="rounded-md border-[#d8dee4] dark:border-[#30363d]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">커밋 메시지 팁</CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground space-y-2">
                 <p>• 현재형으로 작성하세요 (예: "Add" not "Added")</p>
@@ -586,11 +585,11 @@ export function FileChanges() {
             </Card>
 
             {/* Common Mistakes */}
-            <Card className="bg-red-50 border-red-200">
-              <CardHeader>
-                <CardTitle className="text-sm text-red-900">⚠️ 초보자가 자주 하는 실수</CardTitle>
+            <Card className="rounded-md border-[#ffcecb] bg-[#ffebe9] dark:border-[#5d1715] dark:bg-[#2d1110]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-[#cf222e] dark:text-[#ffb4ad]">초보자가 자주 하는 실수</CardTitle>
               </CardHeader>
-              <CardContent className="text-xs text-red-800 space-y-2">
+              <CardContent className="text-xs text-[#82071e] space-y-2 dark:text-[#ffb4ad]">
                 <p>• <strong>커밋 메시지를 대충 쓰기:</strong> "수정", "변경" 같은 메시지는 나중에 혼란스러워요</p>
                 <p>• <strong>너무 많은 변경사항을 한 번에:</strong> 작은 단위로 자주 커밋하는 게 좋아요</p>
                 <p>• <strong>테스트 안 된 코드 커밋:</strong> 작동하는 코드만 커밋하세요</p>

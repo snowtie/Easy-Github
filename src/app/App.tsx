@@ -1,12 +1,12 @@
 import { GitHubManager } from "@/app/components/GitHubManager";
-import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/app/components/ui/sonner";
+import { AppProviders } from "@/app/AppProviders";
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <AppProviders>
       <GitHubManager />
       <Toaster position="top-right" richColors />
-    </ThemeProvider>
+    </AppProviders>
   );
 }

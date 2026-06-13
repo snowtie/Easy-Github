@@ -306,28 +306,27 @@ export function PullRequestManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Guide Card */}
       {showGuide && (
-        <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-purple-900 dark:text-purple-100 flex items-center gap-2">
-                🤝 Pull Request가 뭐예요?
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2">
+                Pull Request가 뭐예요?
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowGuide(false)}
-                className="text-purple-700 dark:text-purple-200"
               >
                 닫기
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 text-purple-900 dark:text-purple-100">
-            <div className="bg-card/60 p-4 rounded-lg">
-              <p className="font-semibold mb-2">📝 쉽게 말하면:</p>
+          <CardContent className="space-y-4 pt-4">
+            <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4 dark:border-[#30363d] dark:bg-[#15181e]">
+              <p className="font-semibold mb-2">쉽게 말하면</p>
               <p className="text-sm">
                 "내가 작업한 코드를 확인해주세요! 괜찮으면 메인 코드에 합쳐주세요!" 
                 라고 요청하는 거예요.
@@ -337,33 +336,33 @@ export function PullRequestManager() {
             <div className="space-y-2 text-sm">
               <p className="font-semibold">Pull Request 과정:</p>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="bg-blue-100 text-blue-800">1. 코드 작성</Badge>
+                <Badge className="border-[#b6e3ff] bg-[#ddf4ff] text-[#0969da]">1. 코드 작성</Badge>
                 <span>→</span>
-                <Badge className="bg-green-100 text-green-800">2. PR 생성</Badge>
+                <Badge className="border-[#aceebb] bg-[#dafbe1] text-[#1a7f37]">2. PR 생성</Badge>
                 <span>→</span>
-                <Badge className="bg-purple-100 text-purple-800">3. 팀원 리뷰</Badge>
+                <Badge className="border-[#d8dee4] bg-[#f6f8fa] text-[#57606a]">3. 팀원 리뷰</Badge>
                 <span>→</span>
-                <Badge className="bg-orange-100 text-orange-800">4. 승인</Badge>
+                <Badge className="border-[#ffd8b5] bg-[#fff1e5] text-[#bc4c00]">4. 승인</Badge>
                 <span>→</span>
-                <Badge className="bg-pink-100 text-pink-800">5. 병합 완료!</Badge>
+                <Badge className="border-[#aceebb] bg-[#dafbe1] text-[#1a7f37]">5. 병합 완료</Badge>
               </div>
             </div>
 
             <div className="space-y-2 text-sm">
               <p className="font-semibold">왜 필요한가요?</p>
-              <p>✅ <strong>코드 리뷰:</strong> 다른 사람이 내 코드를 검토해요</p>
-              <p>✅ <strong>버그 방지:</strong> 문제를 미리 발견할 수 있어요</p>
-              <p>✅ <strong>지식 공유:</strong> 팀원들이 변경사항을 알 수 있어요</p>
-              <p>✅ <strong>품질 관리:</strong> 코드 품질을 높게 유지해요</p>
+              <p><strong>코드 리뷰:</strong> 다른 사람이 내 코드를 검토해요</p>
+              <p><strong>버그 방지:</strong> 문제를 미리 발견할 수 있어요</p>
+              <p><strong>지식 공유:</strong> 팀원들이 변경사항을 알 수 있어요</p>
+              <p><strong>품질 관리:</strong> 코드 품질을 높게 유지해요</p>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Open</p>
@@ -374,8 +373,8 @@ export function PullRequestManager() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Merged</p>
@@ -386,8 +385,8 @@ export function PullRequestManager() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Closed</p>
@@ -436,10 +435,10 @@ export function PullRequestManager() {
       </Dialog>
 
        {/* PR List */}
-       <Card>
-         <CardHeader>
-           <div className="flex items-center justify-between gap-4">
-             <div>
+       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+         <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+             <div className="min-w-0">
                <CardTitle>Pull Requests</CardTitle>
                <CardDescription>
                  {activeProjectPath ? (
@@ -455,7 +454,7 @@ export function PullRequestManager() {
                  )}
                </CardDescription>
              </div>
-             <div className="flex gap-2">
+             <div className="flex flex-wrap gap-2">
                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                  <DialogTrigger asChild>
                    <Button size="sm" disabled={busy || !activeProjectPath || !repoOwner || !repoName}>
@@ -463,7 +462,7 @@ export function PullRequestManager() {
                      새 PR
                    </Button>
                  </DialogTrigger>
-                 <DialogContent>
+                  <DialogContent>
                    <DialogHeader>
                      <DialogTitle>Pull Request 만들기</DialogTitle>
                      <DialogDescription>
@@ -480,7 +479,7 @@ export function PullRequestManager() {
                        <label className="text-sm font-medium">설명</label>
                        <Textarea value={newPrBody} onChange={(e) => setNewPrBody(e.target.value)} rows={4} placeholder="무엇을/왜 변경했는지 적어주세요" />
                      </div>
-                     <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                        <div>
                          <label className="text-sm font-medium">내 브랜치(head)</label>
                          <Input value={newPrHead} onChange={(e) => setNewPrHead(e.target.value)} placeholder="예: feature/login" />
@@ -582,19 +581,19 @@ export function PullRequestManager() {
                 </div>
               ) : (
                 filteredPRs.map((pr) => (
-                  <Card key={pr.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
+                  <Card key={pr.id} className="rounded-md border-[#d8dee4] transition-colors hover:border-[#8c959f] dark:border-[#30363d] dark:hover:border-[#8b949e]">
+                    <CardContent className="p-4">
                       <div className="space-y-4">
                         {/* Header */}
                         <div className="flex items-start gap-4">
                           <div className="mt-1">
                             {getStatusIcon(pr.status)}
                           </div>
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold text-lg">{pr.title}</h3>
+                           <div className="min-w-0 flex-1 space-y-2">
+                             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                               <div className="min-w-0 flex-1">
+                                 <div className="mb-2 flex flex-wrap items-center gap-2">
+                                   <h3 className="min-w-0 truncate text-lg font-semibold">{pr.title}</h3>
                                   <span className="text-muted-foreground">#{pr.number}</span>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{pr.description}</p>
@@ -603,7 +602,7 @@ export function PullRequestManager() {
                             </div>
 
                             {/* Branches */}
-                            <div className="flex items-center gap-2 text-sm">
+                             <div className="flex flex-wrap items-center gap-2 text-sm">
                               <Badge variant="outline" className="font-mono">
                                 {pr.sourceBranch}
                               </Badge>
@@ -628,7 +627,7 @@ export function PullRequestManager() {
                             )}
 
                             {/* Meta Info */}
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-5 h-5">
                                   <AvatarFallback className="text-xs">
@@ -654,14 +653,14 @@ export function PullRequestManager() {
                             </div>
 
                             {/* Stats */}
-                            <div className="flex items-center gap-4 text-sm">
+                             <div className="flex flex-wrap items-center gap-4 text-sm">
                               <span className="text-muted-foreground">{pr.filesChanged} files changed</span>
                               <span className="text-green-600">+{pr.additions}</span>
                               <span className="text-red-600">-{pr.deletions}</span>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-2 pt-2">
+                             <div className="flex flex-wrap gap-2 pt-2">
                                {pr.status === "open" && (
                                  <>
                                    <Button size="sm" variant="default" onClick={() => handleApprove(pr.number)} disabled={busy}>

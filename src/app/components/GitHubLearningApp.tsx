@@ -53,13 +53,13 @@ export function GitHubLearningApp() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white shadow-lg">
+      <header className="border-b border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center gap-3">
-            <GitBranch className="w-8 h-8" />
+            <GitBranch className="w-8 h-8 text-[#0969da]" />
             <div>
               <h1 className="text-2xl font-bold">GitHub 학습 센터</h1>
-              <p className="text-white/80 text-sm">누구나 쉽게 배우는 Git & GitHub</p>
+              <p className="text-sm text-muted-foreground">누구나 쉽게 배우는 Git & GitHub</p>
             </div>
           </div>
         </div>

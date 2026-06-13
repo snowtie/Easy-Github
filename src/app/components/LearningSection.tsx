@@ -236,10 +236,10 @@ export function LearningSection() {
   const progress = Math.round((completedCount / totalTopics) * 100);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Progress Card */}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
           <CardTitle>학습 진행도</CardTitle>
           <CardDescription>
             {completedCount} / {totalTopics} 주제 완료
@@ -253,7 +253,7 @@ export function LearningSection() {
             </div>
             <div className="h-3 bg-border rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                className="h-full bg-[#0969da] transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -263,9 +263,9 @@ export function LearningSection() {
 
       {/* Learning Modules */}
       {learningModules.map((module) => (
-        <Card key={module.id}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card key={module.id} className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <div className="flex items-center justify-between gap-3">
               <CardTitle>{module.title}</CardTitle>
               <Badge variant={module.level === "초급" ? "default" : "secondary"}>
                 {module.level}

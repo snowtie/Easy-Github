@@ -125,25 +125,25 @@ const commandCategories = [
       },
       {
         command: "git push origin <branch-name>",
-        description: "원격 저장소에 푸시",
+        description: "원격 저장소에 업로드",
         explanation: "로컬 변경사항을 원격 저장소에 업로드합니다.",
         example: "git push origin main"
       },
       {
         command: "git push -u origin <branch-name>",
-        description: "푸시 및 추적 설정",
-        explanation: "처음 푸시할 때 사용하며, 업스트림 브랜치를 설정합니다.",
+        description: "업로드 및 추적 설정",
+        explanation: "처음 업로드할 때 사용하며, 업스트림 브랜치를 설정합니다.",
         example: "git push -u origin main"
       },
       {
         command: "git pull",
-        description: "원격 변경사항 가져오기",
-        explanation: "원격 저장소의 변경사항을 가져와 로컬과 병합합니다."
+        description: "로컬로 합치기",
+        explanation: "원격 저장소의 변경사항을 내려받아 로컬에 합칩니다."
       },
       {
         command: "git fetch",
-        description: "원격 변경사항 확인",
-        explanation: "원격 저장소의 변경사항을 가져오지만 병합하지는 않습니다."
+        description: "다운로드(원격 확인)",
+        explanation: "원격 저장소의 변경사항을 내려받지만 바로 합치지는 않습니다."
       }
     ]
   },
@@ -244,10 +244,10 @@ export function CommandPractice() {
   const practicedCount = practicedCommands.size;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Progress */}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
           <CardTitle>연습 진행도</CardTitle>
           <CardDescription>
             {practicedCount} / {totalCommands} 명령어 연습 완료
@@ -255,8 +255,8 @@ export function CommandPractice() {
         </CardHeader>
         <CardContent>
           <div className="h-3 bg-border rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
+            <div
+              className="h-full bg-[#1a7f37] transition-all duration-500"
               style={{ width: `${(practicedCount / totalCommands) * 100}%` }}
             />
           </div>
@@ -265,8 +265,8 @@ export function CommandPractice() {
 
       {/* Command Categories */}
       {commandCategories.map((category, catIndex) => (
-        <Card key={catIndex}>
-          <CardHeader>
+        <Card key={catIndex} className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
             <CardTitle className="flex items-center gap-2">
               <Terminal className="w-5 h-5" />
               {category.name}
@@ -283,13 +283,13 @@ export function CommandPractice() {
               return (
                 <div 
                   key={cmdIndex}
-                  className={`p-4 border rounded-lg space-y-3 transition-all ${
-                    isPracticed ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-900' : 'bg-card'
+                  className={`space-y-3 rounded-md border p-4 transition-colors ${
+                    isPracticed ? 'border-[#aceebb] bg-[#dafbe1] dark:border-[#1f6f43] dark:bg-[#0f2d1b]' : 'border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="font-mono text-xs">
                           {cmd.description}
                         </Badge>
@@ -297,7 +297,7 @@ export function CommandPractice() {
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
                         )}
                       </div>
-                      <div className="bg-slate-900 text-green-400 p-3 rounded font-mono text-sm overflow-x-auto">
+                      <div className="overflow-x-auto rounded-md bg-[#0d1117] p-3 font-mono text-sm text-[#7ee787]">
                         $ {cmd.command}
                       </div>
                       <p className="text-sm text-muted-foreground">{cmd.explanation}</p>
@@ -310,7 +310,7 @@ export function CommandPractice() {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 md:flex-col">
                       <Button
                         variant="outline"
                         size="sm"

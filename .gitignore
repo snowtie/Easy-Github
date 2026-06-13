@@ -2,3 +2,6 @@ node_modules/
 dist/
 release/
 ci-artifacts/
+src-tauri/updater/*.key
+src-tauri/target/
+.pinpoint/

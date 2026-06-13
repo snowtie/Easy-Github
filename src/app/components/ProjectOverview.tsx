@@ -587,11 +587,11 @@ export function ProjectOverview() {
 
   const handleFetch = async (projectId: string, projectName: string, projectPath: string) => {
     if (!window.easyGithub) {
-      toast.error("Electron 환경에서만 Fetch를 지원합니다");
+      toast.error("Electron 환경에서만 다운로드(원격 확인)를 지원합니다");
       return;
     }
 
-    const toastId = toast.loading("원격 변경사항 확인 중...");
+    const toastId = toast.loading("원격 변경사항을 다운로드 중...");
     setGitBusy(projectId);
 
     try {
@@ -599,9 +599,9 @@ export function ProjectOverview() {
       await window.easyGithub.git.fetch(projectPath);
       const status = await window.easyGithub.git.status(projectPath);
       applyStatusToProject(projectId, status);
-      toast.success("Fetch 완료!", { id: toastId });
+      toast.success("다운로드 완료!", { id: toastId });
     } catch (err: any) {
-      toast.error(err?.message || "Fetch에 실패했습니다", { id: toastId });
+      toast.error(err?.message || "다운로드에 실패했습니다", { id: toastId });
     } finally {
       setGitBusy(null);
     }
@@ -609,11 +609,11 @@ export function ProjectOverview() {
 
   const handlePull = async (projectId: string, projectName: string, projectPath: string) => {
     if (!window.easyGithub) {
-      toast.error("Electron 환경에서만 Pull을 지원합니다");
+      toast.error("Electron 환경에서만 로컬로 합치기를 지원합니다");
       return;
     }
 
-    const toastId = toast.loading("Pull 중...");
+    const toastId = toast.loading("로컬로 합치는 중...");
     setGitBusy(projectId);
 
     try {
@@ -621,9 +621,9 @@ export function ProjectOverview() {
       await window.easyGithub.git.pull(projectPath);
       const status = await window.easyGithub.git.status(projectPath);
       applyStatusToProject(projectId, status);
-      toast.success("Pull 완료!", { id: toastId });
+      toast.success("로컬로 합치기 완료!", { id: toastId });
     } catch (err: any) {
-      toast.error(err?.message || "Pull에 실패했습니다", { id: toastId });
+      toast.error(err?.message || "로컬로 합치기에 실패했습니다", { id: toastId });
     } finally {
       setGitBusy(null);
     }
@@ -631,11 +631,11 @@ export function ProjectOverview() {
 
   const handlePush = async (projectId: string, projectName: string, projectPath: string) => {
     if (!window.easyGithub) {
-      toast.error("Electron 환경에서만 Push를 지원합니다");
+      toast.error("Electron 환경에서만 업로드를 지원합니다");
       return;
     }
 
-    const toastId = toast.loading("Push 중...");
+    const toastId = toast.loading("업로드 중...");
     setGitBusy(projectId);
 
     try {
@@ -643,16 +643,26 @@ export function ProjectOverview() {
       await window.easyGithub.git.push(projectPath);
       const status = await window.easyGithub.git.status(projectPath);
       applyStatusToProject(projectId, status);
-      toast.success("Push 완료!", { id: toastId });
+      toast.success("업로드 완료!", { id: toastId });
     } catch (err: any) {
-      toast.error(err?.message || "Push에 실패했습니다", { id: toastId });
+      toast.error(err?.message || "업로드에 실패했습니다", { id: toastId });
     } finally {
       setGitBusy(null);
     }
   };
 
+  const totalChanges = projects.reduce((sum, project) => sum + project.uncommittedChanges, 0);
+  const totalAhead = projects.reduce((sum, project) => sum + project.ahead, 0);
+  const totalBehind = projects.reduce((sum, project) => sum + project.behind, 0);
+  const overviewMetrics = [
+    { label: "전체 프로젝트", value: projects.length, icon: FolderGit2, color: "text-[#0969da]" },
+    { label: "변경사항", value: totalChanges, icon: FileText, color: "text-[#fb6500]" },
+    { label: "업로드 대기", value: totalAhead, icon: RefreshCw, color: "text-[#1a7f37]" },
+    { label: "로컬 반영 필요", value: totalBehind, icon: GitBranch, color: "text-[#8250df]" }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
         <DialogContent hideOverlay overlayClassName="bg-transparent">
           <DialogHeader>
@@ -719,66 +729,29 @@ export function ProjectOverview() {
         </DialogContent>
       </Dialog>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">전체 프로젝트</p>
-                <p className="text-3xl font-bold mt-1">{projects.length}</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        {overviewMetrics.map((metric) => {
+          const Icon = metric.icon;
+          return (
+            <div
+              key={metric.label}
+              className="rounded-md border border-[#d8dee4] bg-white px-5 py-4 shadow-sm dark:border-[#30363d] dark:bg-[#15181e]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">{metric.label}</p>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight">{metric.value}</p>
+                </div>
+                <Icon className={`h-8 w-8 ${metric.color}`} />
               </div>
-              <FolderGit2 className="w-10 h-10 text-blue-500" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">변경사항</p>
-                <p className="text-3xl font-bold mt-1">
-                  {projects.reduce((sum, p) => sum + p.uncommittedChanges, 0)}
-                </p>
-              </div>
-              <FileText className="w-10 h-10 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Push 대기</p>
-                <p className="text-3xl font-bold mt-1">
-                  {projects.reduce((sum, p) => sum + p.ahead, 0)}
-                </p>
-              </div>
-              <RefreshCw className="w-10 h-10 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pull 필요</p>
-                <p className="text-3xl font-bold mt-1">
-                  {projects.reduce((sum, p) => sum + p.behind, 0)}
-                </p>
-              </div>
-              <GitBranch className="w-10 h-10 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
+          );
+        })}
       </div>
 
       {/* User TODO List */}
-      <Card className="border-2 border-emerald-500/40">
-        <CardHeader>
+      <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
+        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <CardTitle>내 TODO</CardTitle>
@@ -964,36 +937,34 @@ export function ProjectOverview() {
 
       {/* Add Project Button */}
       {!showAddProject && (
-        <Card
-          className="border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/30 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+        <button
+          type="button"
+          className="w-full rounded-md border border-dashed border-[#8c959f] bg-[#f6f8fa] px-5 py-8 text-left transition-colors hover:border-[#0969da] hover:bg-[#eef6ff] dark:border-[#30363d] dark:bg-[#15181e] dark:hover:border-[#58a6ff] dark:hover:bg-[#0d263a]"
           onClick={() => setShowAddProject(true)}
         >
-          <CardContent className="py-12">
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <div className="bg-blue-600 p-4 rounded-full">
-                  <Plus className="w-8 h-8 text-white" />
-                </div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#0969da] text-white">
+                <Plus className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">프로젝트 추가하기</h3>
-                <p className="text-blue-700 dark:text-blue-200 mt-2">
+                <h3 className="text-lg font-semibold tracking-tight">프로젝트 추가하기</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   GitHub에서 코드를 다운로드하거나 새 프로젝트를 시작하세요
                 </p>
               </div>
-              <Button size="lg" className="mt-4">
-                <Plus className="w-4 h-4 mr-2" />
-                시작하기
-              </Button>
             </div>
-          </CardContent>
-        </Card>
+            <span className="inline-flex h-9 items-center rounded-md bg-[#1f2328] px-4 text-sm font-medium text-white dark:bg-[#f0f3f6] dark:text-[#15181e]">
+              시작하기
+            </span>
+          </div>
+        </button>
       )}
 
       {/* Add Project Form */}
       {showAddProject && (
-        <Card className="border-2 border-blue-500 shadow-lg">
-          <CardHeader className="bg-blue-50 dark:bg-blue-950/30">
+        <Card className="rounded-md border-[#0969da] shadow-sm">
+          <CardHeader className="border-b border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
             <CardTitle className="flex items-center gap-2">
               <Plus className="w-5 h-5" />
               새 프로젝트 추가
@@ -1003,11 +974,10 @@ export function ProjectOverview() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
-            <Card className="bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-900">
+            <Card className="rounded-md border-[#d8dee4] bg-[#fff8c5] dark:border-[#3b3320] dark:bg-[#2d260f]">
               <CardContent className="pt-4">
                 <div className="flex items-start gap-2">
-                  <span className="text-2xl">💡</span>
-                  <div className="text-sm text-yellow-900 dark:text-yellow-100">
+                  <div className="text-sm text-[#7d4e00] dark:text-[#f0d98c]">
                     <p className="font-semibold mb-1">처음이신가요?</p>
                     <p>GitHub 저장소 페이지에서 초록색 "Code" 버튼을 누르면 URL을 복사할 수 있어요!</p>
                   </div>
@@ -1095,68 +1065,68 @@ export function ProjectOverview() {
         </div>
         
         {projects.length === 0 ? (
-          <Card className="border-2 border-dashed">
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <FolderGit2 className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-semibold">아직 프로젝트가 없어요</p>
-              <p className="text-sm mt-2">위의 "프로젝트 추가하기" 버튼을 눌러 시작하세요!</p>
+          <Card className="rounded-md border-dashed border-[#d8dee4] dark:border-[#30363d]">
+            <CardContent className="py-10 text-center text-muted-foreground">
+              <FolderGit2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="text-base font-semibold text-foreground">아직 프로젝트가 없습니다</p>
+              <p className="text-sm mt-1">위의 프로젝트 추가 영역에서 로컬 저장소를 연결하세요.</p>
             </CardContent>
           </Card>
         ) : (
            projects.map((project) => (
              <Card
                key={project.id}
-               className={`transition-shadow cursor-pointer ${
+               className={`rounded-md transition-colors cursor-pointer shadow-sm ${
                  activeProjectPath === project.path
-                   ? "border-blue-400 bg-blue-50/80 shadow-lg dark:border-blue-500/70 dark:bg-blue-950/40"
-                   : "hover:shadow-lg"
+                   ? "border-[#0969da] bg-[#eef6ff] dark:border-[#58a6ff] dark:bg-[#0d263a]"
+                   : "border-[#d8dee4] hover:border-[#8c959f] dark:border-[#30363d] dark:hover:border-[#8b949e]"
                }`}
                onClick={() => setActiveProject(project.path, project.name)}
              >
-               <CardContent className="pt-6">
-                 <div className="flex items-start justify-between">
+               <CardContent className="p-4">
+                 <div className="flex items-start justify-between gap-4">
 
                   <div className="flex-1 space-y-4">
                     {/* Project Header */}
-                    <div className="flex items-center gap-3">
-                      <FolderGit2 className="w-6 h-6 text-blue-600" />
-                      <div>
-                        <h3 className="text-lg font-semibold">{project.name}</h3>
-                        <p className="text-sm text-muted-foreground font-mono">{project.path}</p>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <FolderGit2 className="h-5 w-5 flex-shrink-0 text-[#0969da]" />
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold">{project.name}</h3>
+                        <p className="truncate font-mono text-sm text-muted-foreground">{project.path}</p>
                       </div>
                     </div>
 
                     {/* Branch and Status */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                      <Badge className="bg-[#ddf4ff] text-[#0969da] border-[#b6e3ff]">
                         <GitBranch className="w-3 h-3 mr-1" />
                         {project.currentBranch}
                       </Badge>
                       
                       {project.uncommittedChanges > 0 && (
-                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-300">
+                        <Badge variant="outline" className="bg-[#fff1e5] text-[#bc4c00] border-[#ffd8b5]">
                           {project.uncommittedChanges} 변경됨
                         </Badge>
                       )}
                       
                       {project.ahead > 0 && (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                        <Badge variant="outline" className="bg-[#dafbe1] text-[#1a7f37] border-[#aceebb]">
                           ↑ {project.ahead} 커밋 앞서감
                         </Badge>
                       )}
                       
                       {project.behind > 0 && (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+                        <Badge variant="outline" className="bg-[#ffebe9] text-[#cf222e] border-[#ffcecb]">
                           ↓ {project.behind} 커밋 뒤처짐
                         </Badge>
                       )}
                     </div>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                      <div className="flex min-w-0 items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        <span>{project.lastCommit}</span>
+                        <span className="truncate">{project.lastCommit}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4" />
@@ -1169,7 +1139,7 @@ export function ProjectOverview() {
                     </div>
 
                     {/* Quick Actions */}
-                     <div className="flex gap-2">
+                     <div className="flex flex-wrap gap-2">
                        <Button
                          size="sm"
                          variant="default"
@@ -1184,38 +1154,39 @@ export function ProjectOverview() {
                         상태
                       </Button>
                       <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleFetch(project.id, project.name, project.path);
-                        }}
-                        disabled={gitBusy === project.id || gitBusy === "clone"}
-                      >
-                        Fetch
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handlePull(project.id, project.name, project.path);
-                        }}
-                        disabled={gitBusy === project.id || gitBusy === "clone"}
-                      >
-                        Pull
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handlePush(project.id, project.name, project.path);
-                        }}
-                        disabled={gitBusy === project.id || gitBusy === "clone"}
-                      >
-                        Push
-                      </Button>
+                         size="sm"
+                         variant="outline"
+                         onClick={(event) => {
+                           event.stopPropagation();
+                           handleFetch(project.id, project.name, project.path);
+                         }}
+                         disabled={gitBusy === project.id || gitBusy === "clone"}
+                       >
+                         다운로드
+                       </Button>
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={(event) => {
+                           event.stopPropagation();
+                           handlePull(project.id, project.name, project.path);
+                         }}
+                         disabled={gitBusy === project.id || gitBusy === "clone"}
+                       >
+                         로컬로 합치기
+                       </Button>
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={(event) => {
+                           event.stopPropagation();
+                           handlePush(project.id, project.name, project.path);
+                         }}
+                         disabled={gitBusy === project.id || gitBusy === "clone"}
+                       >
+                         업로드
+                       </Button>
+
                       <Button 
                         size="sm" 
                         variant="outline"

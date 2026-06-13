@@ -1,0 +1,24 @@
+[package]
+name = "easygithub"
+version = "2.0.0"
+description = "Lightweight local GitHub manager"
+authors = ["EasyGithub"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+dirs = "6"
+keyring = "3"
+reqwest = { version = "0.12", features = ["blocking", "json", "rustls-tls"], default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-process = "2"
+tauri-plugin-updater = "2"
+tempfile = "3"
+time = "=0.3.36"
+walkdir = "2"

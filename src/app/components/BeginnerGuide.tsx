@@ -130,13 +130,13 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
   const progress = ((currentStep + 1) / guideSteps.length) * 100;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-blue-500">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-          <div className="flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
+      <Card className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-md border-[#d8dee4] shadow-2xl dark:border-[#30363d]">
+        <CardHeader className="border-b border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg">
-                <BookOpen className="w-6 h-6" />
+              <div className="rounded-md bg-[#ddf4ff] p-2 text-[#0969da] dark:bg-[#0d263a] dark:text-[#58a6ff]">
+                <BookOpen className="h-6 w-6" />
               </div>
               <CardTitle className="text-2xl">초보자 가이드</CardTitle>
             </div>
@@ -144,7 +144,6 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
               variant="ghost"
               size="sm"
               onClick={handleSkip}
-              className="text-white hover:bg-white/20"
             >
               나중에 보기
             </Button>
@@ -156,9 +155,9 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
               <span>진행률</span>
               <span>{currentStep + 1} / {guideSteps.length}</span>
             </div>
-            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-white transition-all duration-300"
+            <div className="h-2 overflow-hidden rounded-full bg-[#d8dee4] dark:bg-[#30363d]">
+              <div
+                className="h-full bg-[#0969da] transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -174,9 +173,9 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
                   <div 
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                       idx === currentStep 
-                        ? "bg-blue-600 text-white scale-110" 
+                        ? "bg-[#0969da] text-white scale-110"
                         : completedSteps.has(s.id)
-                        ? "bg-green-500 text-white"
+                        ? "bg-[#1a7f37] text-white"
                         : "bg-border text-muted-foreground"
                     }`}
                   >
@@ -199,8 +198,8 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
             {/* Icon and Title */}
             <div className="text-center space-y-4">
               <div className="flex justify-center">
-                <div className="bg-blue-100 p-6 rounded-2xl">
-                  <Icon className="w-16 h-16 text-blue-600" />
+                <div className="rounded-md bg-[#ddf4ff] p-5 dark:bg-[#0d263a]">
+                  <Icon className="h-14 w-14 text-[#0969da] dark:text-[#58a6ff]" />
                 </div>
               </div>
               <div>
@@ -217,16 +216,16 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
             </div>
 
             {/* Tips */}
-            <Card className="bg-yellow-50 border-yellow-200">
+            <Card className="rounded-md border-[#d8dee4] bg-[#fff8c5] dark:border-[#3b3320] dark:bg-[#2d260f]">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-3">
-                  <Lightbulb className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-1" />
-                  <h4 className="font-semibold text-yellow-900">알아두면 좋아요!</h4>
+                  <Lightbulb className="w-5 h-5 text-[#7d4e00] flex-shrink-0 mt-1 dark:text-[#f0d98c]" />
+                  <h4 className="font-semibold text-[#7d4e00] dark:text-[#f0d98c]">알아두면 좋아요!</h4>
                 </div>
                 <ul className="space-y-2 ml-8">
                   {step.tips.map((tip, idx) => (
-                    <li key={idx} className="text-sm text-yellow-800 flex items-start gap-2">
-                      <span className="text-yellow-600 mt-1">•</span>
+                    <li key={idx} className="text-sm text-[#7d4e00] flex items-start gap-2 dark:text-[#f0d98c]">
+                      <span className="mt-1 text-[#7d4e00] dark:text-[#f0d98c]">•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -236,7 +235,7 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
 
             {/* Visual Example */}
             {currentStep === 0 && (
-              <Card className="bg-muted">
+              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
                 <CardContent className="pt-6">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground font-semibold text-center">로그인 순서:</p>
@@ -276,7 +275,7 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
                     </div>
 
                     <p className="text-xs text-muted-foreground text-center">
-                      💡 토큰은 GitHub 설정 페이지에서 만들 수 있어요.
+                      토큰은 GitHub 설정 페이지에서 만들 수 있어요.
                     </p>
                   </div>
                 </CardContent>
@@ -284,11 +283,11 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
             )}
 
             {currentStep === 1 && (
-              <Card className="bg-muted">
+              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
                 <CardContent className="pt-6">
                   <div className="space-y-3 text-center">
                     <p className="text-sm text-muted-foreground font-semibold">예시 (Clone):</p>
-                    <div className="bg-slate-900 text-green-400 p-4 rounded-lg font-mono text-sm">
+                    <div className="rounded-md bg-[#0d1117] p-4 font-mono text-sm text-[#7ee787]">
                       $ git clone https://github.com/username/my-project.git
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -300,7 +299,7 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
             )}
 
             {currentStep === 2 && (
-              <Card className="bg-muted">
+              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
                 <CardContent className="pt-6">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground font-semibold text-center">커밋까지 흐름:</p>
@@ -317,15 +316,15 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
             )}
 
             {currentStep === 4 && (
-              <Card className="bg-muted">
+              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
                 <CardContent className="pt-6">
                   <div className="space-y-3 text-center">
                     <p className="text-sm text-muted-foreground font-semibold">Git Flow 브랜치 예시:</p>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      <Badge className="bg-blue-100 text-blue-800">feature/login</Badge>
-                      <Badge className="bg-green-100 text-green-800">feature/signup</Badge>
-                      <Badge className="bg-amber-100 text-amber-800">release/1.2.0</Badge>
-                      <Badge className="bg-purple-100 text-purple-800">hotfix/1.2.1</Badge>
+                      <Badge className="border-[#b6e3ff] bg-[#ddf4ff] text-[#0969da]">feature/login</Badge>
+                      <Badge className="border-[#aceebb] bg-[#dafbe1] text-[#1a7f37]">feature/signup</Badge>
+                      <Badge className="border-[#ffd8b5] bg-[#fff1e5] text-[#bc4c00]">release/1.2.0</Badge>
+                      <Badge className="border-[#d8dee4] bg-[#f6f8fa] text-[#57606a]">hotfix/1.2.1</Badge>
                     </div>
 
                   </div>
@@ -360,13 +359,13 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
           </div>
 
           {/* Quick Start */}
-          <Card className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <Card className="mt-6 rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <Play className="w-5 h-5 flex-shrink-0 mt-1" />
+                <Play className="mt-1 h-5 w-5 flex-shrink-0 text-[#0969da]" />
                 <div>
                   <h4 className="font-semibold mb-2">바로 시작하고 싶다면?</h4>
-                  <p className="text-sm text-blue-100">
+                  <p className="text-sm text-muted-foreground">
                     1) 상단의 "토큰 로그인"으로 로그인하고, 2) '프로젝트' 탭에서 Clone/추가로 시작하세요!
                   </p>
                 </div>
