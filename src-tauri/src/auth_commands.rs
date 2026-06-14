@@ -42,6 +42,11 @@ pub(crate) fn auth_get_token_status() -> AppResult<Value> {
 }
 
 #[tauri::command]
+pub(crate) fn auth_get_browser_login_status() -> Value {
+    json!({ "available": GITHUB_OAUTH_CLIENT_ID.is_some() })
+}
+
+#[tauri::command]
 pub(crate) fn auth_logout() -> AppResult<()> {
     clear_token()
 }
@@ -88,7 +93,7 @@ pub(crate) fn auth_set_token(token: String) -> AppResult<Value> {
 #[tauri::command]
 pub(crate) fn auth_start_browser_login() -> AppResult<BrowserLoginStart> {
     let client_id = GITHUB_OAUTH_CLIENT_ID.ok_or_else(|| {
-        "사이트 로그인을 사용하려면 EASYGITHUB_GITHUB_OAUTH_CLIENT_ID로 GitHub OAuth App Client ID를 빌드에 넣어야 합니다.".to_string()
+        "사이트 로그인 설정이 포함되지 않은 빌드입니다. GitHub OAuth App Client ID를 설정해 다시 빌드해야 합니다.".to_string()
     })?;
 
     let client = github_client()?;
@@ -129,7 +134,7 @@ pub(crate) fn auth_complete_browser_login(
     expires_in: u64,
 ) -> AppResult<Value> {
     let client_id = GITHUB_OAUTH_CLIENT_ID.ok_or_else(|| {
-        "사이트 로그인을 사용하려면 EASYGITHUB_GITHUB_OAUTH_CLIENT_ID로 GitHub OAuth App Client ID를 빌드에 넣어야 합니다.".to_string()
+        "사이트 로그인 설정이 포함되지 않은 빌드입니다. GitHub OAuth App Client ID를 설정해 다시 빌드해야 합니다.".to_string()
     })?;
     let trimmed_code = device_code.trim();
     if trimmed_code.is_empty() {

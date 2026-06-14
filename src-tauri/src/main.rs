@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
@@ -855,6 +857,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             app_get_app_version,
             auth_commands::auth_get_token_status,
+            auth_commands::auth_get_browser_login_status,
             auth_commands::auth_logout,
             auth_commands::auth_get_user,
             auth_commands::auth_set_token,

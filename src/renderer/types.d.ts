@@ -9,6 +9,7 @@ declare global {
         selectDirectory: (defaultPath?: string) => Promise<string | null>
 
         getAppVersion: () => Promise<string>
+        setWindowTheme: (theme: 'light' | 'dark' | null) => Promise<void>
 
         checkForUpdates: () => Promise<{ status: 'disabled' | 'started' | 'busy' }>
         downloadUpdate: () => Promise<{ status: 'disabled' | 'started' | 'busy' }>
@@ -18,6 +19,7 @@ declare global {
       }
       auth: {
         setToken: (token: string) => Promise<any>
+        getBrowserLoginStatus: () => Promise<{ available: boolean }>
         startBrowserLogin: () => Promise<{
           device_code: string
           user_code: string

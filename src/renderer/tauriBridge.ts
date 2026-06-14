@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -132,6 +133,7 @@ export function installTauriEasyGithubBridge(): void {
         return typeof selected === "string" ? selected : null;
       },
       getAppVersion: () => call("app_get_app_version"),
+      setWindowTheme: (theme: "light" | "dark" | null) => getCurrentWindow().setTheme(theme),
       checkForUpdates: () => checkForTauriUpdate(),
       downloadUpdate: () => downloadTauriUpdate(),
       installUpdate: async () => {
@@ -145,6 +147,7 @@ export function installTauriEasyGithubBridge(): void {
     },
     auth: {
       setToken: (token: string) => call("auth_set_token", { token }),
+      getBrowserLoginStatus: () => call("auth_get_browser_login_status"),
       startBrowserLogin: () => call("auth_start_browser_login"),
       completeBrowserLogin: (deviceCode: string, interval: number, expiresIn: number) =>
         call("auth_complete_browser_login", { device_code: deviceCode, interval, expires_in: expiresIn }),

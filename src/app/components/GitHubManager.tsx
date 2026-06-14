@@ -60,7 +60,7 @@ function parseOwnerRepoFromRemoteUrl(remoteUrl: string): { owner: string; repo: 
 }
 
 export function GitHubManager() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [themeMounted, setThemeMounted] = useState(false);
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -72,6 +72,7 @@ export function GitHubManager() {
   const [authenticated, setAuthenticated] = useState(false);
   const [authUser, setAuthUser] = useState<any | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
+  const [browserLoginAvailable, setBrowserLoginAvailable] = useState(true);
 
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
@@ -109,7 +110,21 @@ export function GitHubManager() {
   }, []);
 
   useEffect(() => {
+    if (!themeMounted || !window.easyGithub) return;
+    const nextTheme = resolvedTheme === "dark" ? "dark" : "light";
+    window.easyGithub.app.setWindowTheme(nextTheme).catch(() => {});
+  }, [themeMounted, resolvedTheme]);
+
+  useEffect(() => {
     refreshAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!window.easyGithub) return;
+    window.easyGithub.auth
+      .getBrowserLoginStatus()
+      .then((status) => setBrowserLoginAvailable(Boolean(status?.available)))
+      .catch(() => setBrowserLoginAvailable(false));
   }, []);
 
   useEffect(() => {
@@ -165,7 +180,8 @@ export function GitHubManager() {
       await refreshAuth();
       toast.success("토큰 로그인 완료!");
     } catch (err: any) {
-      toast.error(err?.message || "토큰 로그인에 실패했습니다");
+      const message = typeof err === "string" ? err : err?.message;
+      toast.error(message || "토큰 로그인에 실패했습니다");
     } finally {
       setAuthBusy(false);
     }
@@ -193,7 +209,8 @@ export function GitHubManager() {
       await refreshAuth();
       toast.success("사이트 로그인 완료!");
     } catch (err: any) {
-      toast.error(err?.message || "사이트 로그인에 실패했습니다");
+      const message = typeof err === "string" ? err : err?.message;
+      toast.error(message || "사이트 로그인에 실패했습니다");
     } finally {
       setAuthBusy(false);
     }
@@ -361,11 +378,16 @@ export function GitHubManager() {
                   GitHub 사이트에서 승인하면 앱에 토큰이 저장됩니다.
                 </p>
               </div>
-              <Button type="button" onClick={() => void handleBrowserLogin()} disabled={authBusy}>
+              <Button type="button" onClick={() => void handleBrowserLogin()} disabled={authBusy || !browserLoginAvailable}>
                 <Globe className="mr-2 h-4 w-4" />
                 사이트로 로그인
               </Button>
             </div>
+            {!browserLoginAvailable ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                사이트 로그인 설정이 포함되지 않은 빌드입니다. 토큰 로그인을 사용하거나 OAuth Client ID를 설정해 다시 빌드해야 합니다.
+              </p>
+            ) : null}
             {browserLoginInfo ? (
               <div className="mt-4 rounded-md border border-[#d8dee4] bg-white p-3 dark:border-[#30363d] dark:bg-[#0d1117]">
                 <p className="text-xs text-muted-foreground">GitHub 화면에 이 코드를 입력하세요.</p>
