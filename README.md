@@ -1,44 +1,67 @@
 # Easy Github
 
-깃허브에 대해 모르지만 협업을 하느라 걱정이 되시나요? 걱정하지 마세요!
-그런 분들을 위해 준비했습니다 Easy Github!
+GitHub가 익숙하지 않은 사람도 로컬 프로젝트를 안전하게 관리할 수 있도록 만든 Windows용 데스크톱 앱입니다.
 
-# Easy Github란?
+![Easy Github 프로젝트 화면](docs/screenshots/easygithub-projects.png)
 
-github에 대하여 그 어떤 지식이 없는 분들과 모든 github 사용자 분들을 위한 쉬운 프로젝트 관리 툴입니다.
+## 주요 기능
 
-(자동 업데이트를 지원합니다.)
+- 로컬 Git 저장소 등록 및 프로젝트 전환
+- 변경사항 확인, stage, commit, pull, push
+- 브랜치 생성, 전환, 병합, 삭제
+- GitHub PR, Issue, Repository 관리
+- 프로젝트별 TODO 확인
+- 앱 내 초보자 가이드
+- 라이트/다크/시스템 테마
+- Tauri 기반 경량 실행 및 자동 업데이트
 
-# 운영체제
+## 다운로드
 
-window 64 bit
+최신 설치 파일은 [GitHub Releases](https://github.com/snowtie/Easy-Github/releases/latest)에서 받을 수 있습니다.
 
-(아직은 다른 운영채제 지원 의사는 없습니다.)
+Windows 64-bit 환경에서는 `EasyGithub_2.1.5_x64-setup.exe`를 다운로드해서 실행하면 됩니다.
 
-# 사용 방법
+## 로그인
 
-[릴리즈](https://github.com/snowtie/Easy-Github/releases) 탭으로 가서 exe 파일을 다운로드 합니다.
+GitHub 기능을 사용하려면 로그인이 필요합니다.
 
-exe 파일을 실행하고 잠시 기다립니다.
+- 기본 방식: GitHub Personal Access Token
+- 사이트 로그인: OAuth Client ID가 포함된 빌드에서 사용 가능
 
-실행이 완료되었습니다! 자체 제공하는 튜토리얼로 가이드를 제공합니다(한번씩 읽어보는것을 추천합니다.)
+토큰은 Windows 자격 증명 저장소를 통해 로컬 PC에 저장됩니다.
 
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125850" src="https://github.com/user-attachments/assets/a18c8be2-a390-4859-8fa1-34fb0bfc053b" />
+### 토큰 발급
 
-## 비공개 저장소에 접근할 수 없는 경우
+1. [GitHub 토큰 발급 페이지](https://github.com/settings/tokens)로 이동합니다.
+2. 필요한 권한을 선택해 token을 발급합니다.
+3. 앱의 `로그인` 버튼을 누르고 token을 붙여넣습니다.
 
-github [토큰 발급 페이지](https://github.com/settings/tokens)로 들어갑니다.
+비공개 저장소를 다루려면 `repo` 권한이 필요합니다.
 
-clasic 토큰을 발급받습니다.
-(repo 권한을 부여해주셔야 합니다.)
+## 업데이트
 
-Easy Github 앱의 토큰을 붙혀넣습니다.
+앱 안의 `업데이트 확인` 버튼으로 새 버전을 확인할 수 있습니다.
 
-끝! 이제 비공개 저장소에도 접근할 수 있습니다!
+`2.1.5` 릴리스부터 Windows 실행 시 불필요한 CMD 창이 뜨지 않고, 다크모드 전환 시 native title bar theme도 같이 반영됩니다.
 
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125844" src="https://github.com/user-attachments/assets/95a13a95-71d6-4858-b7c5-a798b794cbbc" />
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125842" src="https://github.com/user-attachments/assets/6fa050b8-b624-4fe4-8ae6-2f435563b20e" />
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125840" src="https://github.com/user-attachments/assets/3b2bdcdf-de30-4b18-b531-6f34b937e27c" />
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125836" src="https://github.com/user-attachments/assets/6357d8bc-4717-4076-9a49-a9c4ec401a41" />
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125832" src="https://github.com/user-attachments/assets/071bae4a-9c7b-4052-b00f-3490487f4b2d" />
-<img width="3440" height="1392" alt="스크린샷 2026-01-21 125825" src="https://github.com/user-attachments/assets/4f325f34-5894-486f-b06d-ea15d61b4dcb" />
+## 개발
+
+```powershell
+npm install
+npm run dev
+```
+
+Tauri 앱으로 실행하려면:
+
+```powershell
+npm run tauri:dev
+```
+
+릴리스 빌드:
+
+```powershell
+npm run tauri:build
+npm run updater:metadata
+```
+
+업데이트 서명에는 `TAURI_SIGNING_PRIVATE_KEY`가 필요합니다.
