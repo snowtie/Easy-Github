@@ -53,7 +53,7 @@ export function GitHubLearningApp() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]">
+      <header className="bg-white dark:bg-[#15181e]">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center gap-3">
             <GitBranch className="w-8 h-8 text-[#0969da]" />

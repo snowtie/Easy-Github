@@ -405,10 +405,8 @@ export function GitHubManager() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-[#d8dee4] dark:bg-[#30363d]" />
+            <div className="flex items-center justify-center">
               <span className="text-xs text-muted-foreground">또는 토큰으로 로그인</span>
-              <div className="h-px flex-1 bg-[#d8dee4] dark:bg-[#30363d]" />
             </div>
             <Input
               type="password"
@@ -470,7 +468,7 @@ export function GitHubManager() {
           />
 
           <main className="min-w-0">
-            <header className="sticky top-0 z-20 border-b border-[#d8dee4] bg-[#f6f7f9]/90 px-5 py-3 backdrop-blur dark:border-[#30363d] dark:bg-[#0f1115]/90">
+            <header className="sticky top-0 z-20 bg-[#f6f7f9]/90 px-5 py-3 backdrop-blur dark:bg-[#0f1115]/90">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

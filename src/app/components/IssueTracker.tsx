@@ -369,7 +369,7 @@ export function IssueTracker() {
       {/* Guide Card */}
       {showGuide && (
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2">
                 이슈(Issue)란?
@@ -490,7 +490,7 @@ export function IssueTracker() {
       {/* Create Issue Form */}
       {showCreateIssue && (
         <Card className="rounded-md border-[#0969da] shadow-sm">
-          <CardHeader className="border-b border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
+          <CardHeader className="bg-[#f6f8fa] dark:bg-[#15181e]">
             <CardTitle>새 이슈 만들기</CardTitle>
             <CardDescription>버그 리포트, 기능 요청, 질문 등을 작성하세요</CardDescription>
           </CardHeader>
@@ -534,7 +534,7 @@ export function IssueTracker() {
 
        {/* Issue List */}
        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-         <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+         <CardHeader className="pb-4">
            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
              <div className="min-w-0">
                <CardTitle>이슈</CardTitle>
@@ -621,7 +621,7 @@ export function IssueTracker() {
                             )}
 
                             {/* Meta */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-2 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-5 h-5">
                                   <AvatarFallback className="text-xs">

@@ -7,7 +7,23 @@ import { Badge } from "@/app/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Progress } from "@/app/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
-import { FolderGit2, FolderOpen, Plus, ExternalLink, GitBranch, Star, Clock, Users, Trash2, RefreshCw, FileText } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  FolderGit2,
+  FolderOpen,
+  GitBranch,
+  KeyRound,
+  MousePointerClick,
+  Plus,
+  RefreshCw,
+  Star,
+  Clock,
+  Trash2,
+  Upload,
+  Users
+} from "lucide-react";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -660,6 +676,41 @@ export function ProjectOverview() {
     { label: "업로드 대기", value: totalAhead, icon: RefreshCw, color: "text-[#1a7f37]" },
     { label: "로컬 반영 필요", value: totalBehind, icon: GitBranch, color: "text-[#8250df]" }
   ];
+  const beginnerSteps = [
+    {
+      label: "1. 로그인",
+      description: "GitHub 기능을 쓰려면 상단 로그인에서 계정을 연결합니다.",
+      icon: KeyRound,
+      state: "todo"
+    },
+    {
+      label: "2. 프로젝트 추가",
+      description:
+        projects.length > 0
+          ? "프로젝트가 등록되어 있습니다."
+          : "GitHub 저장소 주소를 붙여넣거나 로컬 폴더를 선택합니다.",
+      icon: Plus,
+      state: projects.length > 0 ? "done" : "todo"
+    },
+    {
+      label: "3. 프로젝트 선택",
+      description: activeProjectPath ? `${activeProjectName} 작업 중입니다.` : "작업할 프로젝트 카드를 클릭합니다.",
+      icon: MousePointerClick,
+      state: activeProjectPath ? "done" : projects.length > 0 ? "todo" : "locked"
+    },
+    {
+      label: "4. 변경 확인",
+      description: "변경사항 탭에서 수정된 파일을 확인하고 커밋할 파일을 고릅니다.",
+      icon: FileText,
+      state: activeProjectPath ? "ready" : "locked"
+    },
+    {
+      label: "5. 커밋 후 Push",
+      description: "커밋으로 저장 기록을 만들고 Push로 GitHub에 올립니다.",
+      icon: Upload,
+      state: activeProjectPath ? "ready" : "locked"
+    }
+  ];
 
   return (
     <div className="space-y-5">
@@ -729,6 +780,57 @@ export function ProjectOverview() {
         </DialogContent>
       </Dialog>
 
+      <section className="rounded-md bg-[#eef6ff] p-5 shadow-sm dark:bg-[#0d263a]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#0969da] dark:text-[#58a6ff]">
+              처음이면 여기부터
+            </p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">GitHub 작업을 시작하는 순서</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              로그인, 프로젝트 추가, 프로젝트 선택, 변경 확인, 커밋, Push 순서로 진행하면 됩니다.
+            </p>
+          </div>
+          <Button type="button" onClick={() => setShowAddProject(true)} className="shrink-0">
+            <Plus className="mr-2 h-4 w-4" />
+            프로젝트 추가하기
+          </Button>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {beginnerSteps.map((step) => {
+            const Icon = step.icon;
+            const isDone = step.state === "done";
+            const isLocked = step.state === "locked";
+
+            return (
+              <div
+                key={step.label}
+                className={`rounded-md bg-white p-4 shadow-sm dark:bg-[#15181e] ${
+                  isLocked ? "opacity-60" : ""
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${
+                      isDone
+                        ? "bg-[#dafbe1] text-[#1a7f37] dark:bg-[#14341f] dark:text-[#7ee787]"
+                        : "bg-[#ddf4ff] text-[#0969da] dark:bg-[#0f2f44] dark:text-[#58a6ff]"
+                    }`}
+                  >
+                    {isDone ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold">{step.label}</p>
+                    <p className="mt-1 text-sm leading-5 text-muted-foreground">{step.description}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         {overviewMetrics.map((metric) => {
           const Icon = metric.icon;
@@ -751,7 +853,7 @@ export function ProjectOverview() {
 
       {/* User TODO List */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <CardTitle>내 TODO</CardTitle>
@@ -791,7 +893,7 @@ export function ProjectOverview() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 pt-4">
           {!activeProjectPath ? (
             <div className="text-sm text-muted-foreground">
               먼저 프로젝트를 선택해주세요. (프로젝트 카드에서 <strong>상태</strong> 버튼을 누르면 선택됩니다)
@@ -964,7 +1066,7 @@ export function ProjectOverview() {
       {/* Add Project Form */}
       {showAddProject && (
         <Card className="rounded-md border-[#0969da] shadow-sm">
-          <CardHeader className="border-b border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
+          <CardHeader className="bg-[#f6f8fa] dark:bg-[#15181e]">
             <CardTitle className="flex items-center gap-2">
               <Plus className="w-5 h-5" />
               새 프로젝트 추가
@@ -979,7 +1081,7 @@ export function ProjectOverview() {
                 <div className="flex items-start gap-2">
                   <div className="text-sm text-[#7d4e00] dark:text-[#f0d98c]">
                     <p className="font-semibold mb-1">처음이신가요?</p>
-                    <p>GitHub 저장소 페이지에서 초록색 "Code" 버튼을 누르면 URL을 복사할 수 있어요!</p>
+                    <p>GitHub 저장소 페이지 → 초록색 "Code" 버튼 → HTTPS 주소 복사 → 아래 입력칸에 붙여넣기 순서로 진행하세요.</p>
                   </div>
                 </div>
               </CardContent>
@@ -1068,8 +1170,12 @@ export function ProjectOverview() {
           <Card className="rounded-md border-dashed border-[#d8dee4] dark:border-[#30363d]">
             <CardContent className="py-10 text-center text-muted-foreground">
               <FolderGit2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="text-base font-semibold text-foreground">아직 프로젝트가 없습니다</p>
-              <p className="text-sm mt-1">위의 프로젝트 추가 영역에서 로컬 저장소를 연결하세요.</p>
+              <p className="text-base font-semibold text-foreground">첫 프로젝트를 추가해야 시작할 수 있습니다</p>
+              <p className="text-sm mt-1">GitHub 저장소 주소가 있다면 프로젝트 추가하기를 눌러 연결하세요.</p>
+              <Button type="button" className="mt-4" onClick={() => setShowAddProject(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                프로젝트 추가하기
+              </Button>
             </CardContent>
           </Card>
         ) : (

@@ -158,7 +158,7 @@ export function CommitHistory() {
       {/* Guide Card */}
       {showGuide && (
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2">
                 커밋 히스토리란?
@@ -192,7 +192,7 @@ export function CommitHistory() {
 
       {/* Header with Search and Filters */}
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <CardTitle>커밋 히스토리</CardTitle>
             <CardDescription>
               {activeProjectName ? (
@@ -348,7 +348,7 @@ export function CommitHistory() {
                     </div>
 
                     {/* Stats and Actions */}
-                    <div className="flex flex-col gap-3 border-t pt-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <Code className="w-4 h-4 text-muted-foreground/70" />

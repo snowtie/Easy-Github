@@ -3,84 +3,130 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/ca
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import {
+  ArrowRight,
   BookOpen,
   CheckCircle2,
-  FolderGit2,
-  GitBranch,
-  GitCommit,
-  Upload,
   Download,
-  ArrowRight,
-  Lightbulb,
-  Play,
+  ExternalLink,
+  FileCheck2,
+  GitBranch,
   KeyRound,
-  Palette,
-  ExternalLink
+  MousePointerClick,
+  Upload
 } from "lucide-react";
 
 interface GuideStep {
   id: number;
   title: string;
+  plainTitle: string;
   description: string;
   icon: any;
-  tips: string[];
+  action: string;
+  terms: { label: string; meaning: string }[];
+  checks: string[];
 }
 
 const guideSteps: GuideStep[] = [
   {
     id: 1,
-    title: "토큰으로 로그인하기",
-    description: "GitHub 기능(PR/Issue/Repo 목록 등)을 사용하려면 토큰(PAT)으로 로그인해요.",
+    title: "로그인 준비",
+    plainTitle: "GitHub 기능을 쓰기 위해 먼저 로그인해요",
+    description: "PR, Issue, 저장소 목록 같은 GitHub 기능은 로그인 후 사용할 수 있습니다.",
     icon: KeyRound,
-    tips: [
-      "앱은 브라우저 OAuth 로그인을 사용하지 않고, 토큰(PAT) 방식만 지원해요",
-      "토큰은 renderer가 아니라 main process에서만 암호화 저장돼요",
-      "로그인 버튼 옆에 테마(시스템/라이트/다크) 토글도 있어요"
+    action: "상단의 로그인 버튼을 누르고 사이트 로그인 또는 토큰 로그인을 선택하세요.",
+    terms: [
+      { label: "사이트 로그인", meaning: "GitHub 페이지에서 승인하는 방식" },
+      { label: "토큰 로그인", meaning: "GitHub에서 만든 비밀번호 같은 키를 붙여넣는 방식" }
+    ],
+    checks: [
+      "사이트 로그인이 꺼져 있으면 토큰 로그인으로 진행하면 됩니다.",
+      "비공개 저장소를 다룰 경우 토큰에는 repo 권한이 필요합니다.",
+      "로그인은 나중에 해도 되지만 PR, Issue 기능은 제한됩니다."
     ]
   },
   {
     id: 2,
-    title: "프로젝트 추가 & 선택",
-    description: "'프로젝트' 탭에서 저장소를 Clone(다운로드)하고, 상태 버튼을 눌러 작업할 프로젝트를 선택해요.",
-    icon: FolderGit2,
-    tips: [
-      "Clone은 '원격 저장소를 내 PC로 복사'하는 작업이에요",
-      "GitHub 저장소의 Code 버튼에서 URL을 복사해서 붙여넣으면 돼요",
-      "프로젝트를 선택해야 브랜치/변경사항/커밋 탭이 제대로 동작해요"
+    title: "프로젝트 가져오기",
+    plainTitle: "GitHub 코드를 내 PC에 내려받아요",
+    description: "프로젝트 탭에서 GitHub 저장소 주소와 저장할 폴더를 넣으면 앱이 다운로드합니다.",
+    icon: Download,
+    action: "프로젝트 탭의 프로젝트 추가하기를 누르고 GitHub URL을 붙여넣으세요.",
+    terms: [
+      { label: "Clone", meaning: "GitHub 코드를 내 PC 폴더로 복사하는 작업" },
+      { label: "저장소 URL", meaning: "GitHub의 Code 버튼에서 복사하는 주소" }
+    ],
+    checks: [
+      "처음이면 빈 폴더를 선택하는 것이 가장 안전합니다.",
+      "이미 파일이 있는 폴더는 유지 모드를 사용할 수 있습니다.",
+      "다운로드가 끝나면 프로젝트 카드가 목록에 생깁니다."
     ]
   },
   {
     id: 3,
-    title: "변경사항 확인 & 스테이징",
-    description: "'변경사항' 탭에서 수정된 파일을 확인하고, 커밋할 파일만 선택(스테이징)해요.",
-    icon: GitCommit,
-    tips: [
-      "파일을 모두 커밋할 필요는 없어요. 필요한 것만 선택하세요",
-      "파일 아이콘(문서 버튼)으로 diff를 확인하고 커밋하기를 추천해요",
-      "초록색(+), 빨간색(-)이 어떤 변경인지 먼저 눈으로 확인하세요"
+    title: "작업할 프로젝트 선택",
+    plainTitle: "지금 작업할 프로젝트를 선택해요",
+    description: "앱은 선택된 프로젝트를 기준으로 변경사항, 브랜치, TODO를 보여줍니다.",
+    icon: MousePointerClick,
+    action: "프로젝트 카드의 상태 버튼을 누르거나 카드를 클릭해 활성 프로젝트로 만드세요.",
+    terms: [
+      { label: "활성 프로젝트", meaning: "지금 앱이 기준으로 삼는 로컬 저장소" },
+      { label: "브랜치", meaning: "작업을 나누는 별도 흐름" }
+    ],
+    checks: [
+      "오른쪽 패널의 Project 영역에 프로젝트 이름이 보이면 선택된 상태입니다.",
+      "프로젝트를 선택해야 변경사항, 커밋, 브랜치 탭이 정확히 동작합니다.",
+      "다른 프로젝트를 누르면 언제든 기준을 바꿀 수 있습니다."
     ]
   },
   {
     id: 4,
-    title: "커밋 & 동기화(Push/Pull)",
-    description: "'커밋' 탭에서 기록을 확인하고, 필요하면 Push/Pull로 원격과 동기화해요.",
-    icon: Upload,
-    tips: [
-      "커밋 메시지는 '무엇을 왜 바꿨는지'가 보이게 구체적으로 적어요",
-      "Push 전에는 Pull로 최신 코드를 먼저 가져오는 습관이 좋아요",
-      "Push/Pull 에러가 나면 먼저 원격 URL과 브랜치를 확인해보세요"
+    title: "변경 저장하기",
+    plainTitle: "바꾼 파일을 저장 기록으로 남겨요",
+    description: "변경사항 탭에서 파일을 확인하고, 커밋 메시지를 써서 기록으로 남깁니다.",
+    icon: FileCheck2,
+    action: "변경사항 탭에서 파일 내용을 확인한 뒤 커밋할 파일만 선택하세요.",
+    terms: [
+      { label: "Stage", meaning: "이번 저장 기록에 포함할 파일 선택" },
+      { label: "Commit", meaning: "선택한 변경을 저장 기록으로 남기는 작업" }
+    ],
+    checks: [
+      "모든 파일을 한 번에 커밋하지 않아도 됩니다.",
+      "커밋 메시지는 무엇을 바꿨는지 한 문장으로 적으면 충분합니다.",
+      "실수했다면 커밋 전에는 선택을 해제할 수 있습니다."
     ]
   },
   {
     id: 5,
-    title: "브랜치 & 협업(PR/Issue)",
-    description: "큰 작업은 브랜치로 분리하고, 필요하면 PR/Issue 탭에서 협업 기능을 써요.",
+    title: "GitHub와 동기화",
+    plainTitle: "내 PC와 GitHub 상태를 맞춰요",
+    description: "Pull로 GitHub의 최신 변경을 가져오고, Push로 내 커밋을 GitHub에 올립니다.",
+    icon: Upload,
+    action: "프로젝트 카드 또는 변경사항 흐름에서 Pull 후 Push 순서로 진행하세요.",
+    terms: [
+      { label: "Pull", meaning: "GitHub의 최신 내용을 내 PC로 가져오기" },
+      { label: "Push", meaning: "내 저장 기록을 GitHub에 업로드하기" }
+    ],
+    checks: [
+      "여러 사람이 같이 작업하면 Push 전에 Pull을 먼저 하는 습관이 좋습니다.",
+      "업로드 대기가 0이면 GitHub에 올릴 새 커밋이 없는 상태입니다.",
+      "충돌이 나면 같은 파일을 여러 사람이 바꾼 상황일 수 있습니다."
+    ]
+  },
+  {
+    id: 6,
+    title: "협업 기능 사용",
+    plainTitle: "PR과 Issue로 협업을 이어가요",
+    description: "작업이 커지면 브랜치로 나누고, PR과 Issue로 리뷰와 할 일을 관리합니다.",
     icon: GitBranch,
-    tips: [
-      "Git Flow에선 main(배포)·develop(통합)·feature/release/hotfix로 역할을 나눠요.",
-
-      "PR은 코드 리뷰/병합 흐름이고, Issue는 할 일/버그 추적이에요",
-      "앱에서 외부 링크를 열 때는 보안상 GitHub 관련 링크만 열리도록 제한돼요"
+    action: "리뷰 탭에서 PR을 확인하고, 이슈 탭에서 할 일과 버그를 관리하세요.",
+    terms: [
+      { label: "PR", meaning: "내 작업을 합치기 전에 리뷰받는 요청" },
+      { label: "Issue", meaning: "할 일, 버그, 질문을 남기는 게시글" }
+    ],
+    checks: [
+      "혼자 쓰는 경우에도 Issue는 TODO 기록처럼 사용할 수 있습니다.",
+      "큰 기능은 별도 브랜치에서 작업하면 되돌리기 쉽습니다.",
+      "처음에는 프로젝트, 변경사항, 커밋, 업로드 흐름만 익혀도 충분합니다."
     ]
   }
 ];
@@ -94,7 +140,6 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   const openExternal = (url: string) => {
-    // Electron 환경에서는 window.open 대신 main process를 통해 연다.
     if (window.easyGithub) {
       window.easyGithub.app.openExternal(url);
       return;
@@ -116,12 +161,8 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
     }
   };
 
-  const handleSkip = () => {
-    onClose();
-  };
-
   const handleComplete = () => {
-    setCompletedSteps(new Set(guideSteps.map(s => s.id)));
+    setCompletedSteps(new Set(guideSteps.map((step) => step.id)));
     onClose();
   };
 
@@ -131,26 +172,26 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-      <Card className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-md border-[#d8dee4] shadow-2xl dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] bg-white dark:border-[#30363d] dark:bg-[#15181e]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+      <Card className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-md border-[#d8dee4] shadow-2xl dark:border-[#30363d]">
+        <CardHeader className="bg-white dark:bg-[#15181e]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
               <div className="rounded-md bg-[#ddf4ff] p-2 text-[#0969da] dark:bg-[#0d263a] dark:text-[#58a6ff]">
                 <BookOpen className="h-6 w-6" />
               </div>
-              <CardTitle className="text-2xl">초보자 가이드</CardTitle>
+              <div>
+                <CardTitle className="text-2xl">처음 시작 가이드</CardTitle>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  Git 용어보다 먼저, 앱에서 눌러야 할 순서대로 안내합니다.
+                </p>
+              </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-            >
+            <Button variant="ghost" size="sm" onClick={onClose}>
               나중에 보기
             </Button>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="mt-4 space-y-2">
+
+          <div className="mt-5 space-y-2">
             <div className="flex justify-between text-sm">
               <span>진행률</span>
               <span>{currentStep + 1} / {guideSteps.length}</span>
@@ -164,214 +205,135 @@ export function BeginnerGuide({ onClose }: BeginnerGuideProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="pt-8 pb-6">
-          {/* Step Indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center gap-2">
-              {guideSteps.map((s, idx) => (
-                <div key={s.id} className="flex items-center">
-                  <div 
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                      idx === currentStep 
-                        ? "bg-[#0969da] text-white scale-110"
-                        : completedSteps.has(s.id)
-                        ? "bg-[#1a7f37] text-white"
-                        : "bg-border text-muted-foreground"
-                    }`}
-                  >
-                    {completedSteps.has(s.id) ? (
-                      <CheckCircle2 className="w-5 h-5" />
-                    ) : (
-                      idx + 1
-                    )}
-                  </div>
-                  {idx < guideSteps.length - 1 && (
-                    <div className="w-8 h-1 bg-border mx-1" />
-                  )}
-                </div>
-              ))}
-            </div>
+        <CardContent className="space-y-6 px-6 pb-6 pt-6">
+          <div className="grid gap-2 md:grid-cols-6">
+            {guideSteps.map((guideStep, index) => {
+              const isCurrent = index === currentStep;
+              const isDone = completedSteps.has(guideStep.id);
+              return (
+                <button
+                  key={guideStep.id}
+                  type="button"
+                  onClick={() => setCurrentStep(index)}
+                  className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                    isCurrent
+                      ? "bg-[#0969da] text-white"
+                      : isDone
+                      ? "bg-[#dafbe1] text-[#1a7f37] dark:bg-[#12261a] dark:text-[#7ee787]"
+                      : "bg-[#f6f8fa] text-muted-foreground hover:bg-[#eef6ff] dark:bg-[#15181e] dark:hover:bg-[#0d263a]"
+                  }`}
+                >
+                  <span className="block text-xs opacity-80">Step {guideStep.id}</span>
+                  <span className="block truncate font-semibold">{guideStep.title}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Current Step Content */}
-          <div className="space-y-6">
-            {/* Icon and Title */}
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <div className="rounded-md bg-[#ddf4ff] p-5 dark:bg-[#0d263a]">
-                  <Icon className="h-14 w-14 text-[#0969da] dark:text-[#58a6ff]" />
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <section className="space-y-5">
+              <div className="flex items-start gap-4">
+                <div className="rounded-md bg-[#ddf4ff] p-4 text-[#0969da] dark:bg-[#0d263a] dark:text-[#58a6ff]">
+                  <Icon className="h-9 w-9" />
+                </div>
+                <div>
+                  <Badge className="mb-3">Step {step.id}</Badge>
+                  <h3 className="text-2xl font-bold tracking-tight">{step.plainTitle}</h3>
+                  <p className="mt-2 text-base leading-relaxed text-muted-foreground">{step.description}</p>
                 </div>
               </div>
-              <div>
-                <Badge className="mb-3 text-sm">
-                  Step {step.id}
-                </Badge>
-                <h3 className="text-2xl font-bold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-lg text-muted-foreground mt-3 leading-relaxed">
-                  {step.description}
+
+              <div className="rounded-md bg-[#eef6ff] p-4 dark:bg-[#0d263a]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#0969da] dark:text-[#58a6ff]">
+                  지금 할 일
                 </p>
+                <p className="mt-2 text-base font-semibold">{step.action}</p>
               </div>
-            </div>
 
-            {/* Tips */}
-            <Card className="rounded-md border-[#d8dee4] bg-[#fff8c5] dark:border-[#3b3320] dark:bg-[#2d260f]">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3 mb-3">
-                  <Lightbulb className="w-5 h-5 text-[#7d4e00] flex-shrink-0 mt-1 dark:text-[#f0d98c]" />
-                  <h4 className="font-semibold text-[#7d4e00] dark:text-[#f0d98c]">알아두면 좋아요!</h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {step.terms.map((term) => (
+                  <div key={term.label} className="rounded-md bg-[#f6f8fa] p-4 dark:bg-[#15181e]">
+                    <p className="text-sm font-semibold">{term.label}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{term.meaning}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <aside className="rounded-md bg-[#f6f8fa] p-4 dark:bg-[#15181e]">
+              <p className="text-sm font-semibold">헷갈리면 이것만 확인</p>
+              <ul className="mt-4 space-y-3">
+                {step.checks.map((check) => (
+                  <li key={check} className="flex gap-2 text-sm leading-relaxed text-muted-foreground">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#1a7f37]" />
+                    <span>{check}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {currentStep === 0 ? (
+                <div className="mt-5 flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openExternal("https://github.com/settings/tokens")}
+                    className="justify-start gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    토큰 만들기
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      openExternal(
+                        "https://docs.github.com/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token"
+                      )
+                    }
+                    className="justify-start gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    GitHub 토큰 가이드
+                  </Button>
                 </div>
-                <ul className="space-y-2 ml-8">
-                  {step.tips.map((tip, idx) => (
-                    <li key={idx} className="text-sm text-[#7d4e00] flex items-start gap-2 dark:text-[#f0d98c]">
-                      <span className="mt-1 text-[#7d4e00] dark:text-[#f0d98c]">•</span>
-                      <span>{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Visual Example */}
-            {currentStep === 0 && (
-              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
-                <CardContent className="pt-6">
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground font-semibold text-center">로그인 순서:</p>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-sm">1. 토큰 로그인</Badge>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/70" />
-                      <Badge variant="outline" className="text-sm">2. 토큰 만들기</Badge>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/70" />
-                      <Badge variant="outline" className="text-sm">3. 붙여넣기</Badge>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openExternal("https://github.com/settings/tokens")}
-                        className="gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        토큰 만들기
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          openExternal(
-                            "https://docs.github.com/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token"
-                          )
-                        }
-                        className="gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        토큰 가이드
-                      </Button>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground text-center">
-                      토큰은 GitHub 설정 페이지에서 만들 수 있어요.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 1 && (
-              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
-                <CardContent className="pt-6">
-                  <div className="space-y-3 text-center">
-                    <p className="text-sm text-muted-foreground font-semibold">예시 (Clone):</p>
-                    <div className="rounded-md bg-[#0d1117] p-4 font-mono text-sm text-[#7ee787]">
-                      $ git clone https://github.com/username/my-project.git
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      ↑ 앱에서는 이 과정을 "프로젝트" 탭에서 버튼으로 할 수 있어요
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 2 && (
-              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
-                <CardContent className="pt-6">
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground font-semibold text-center">커밋까지 흐름:</p>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-sm">1. 파일 수정</Badge>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/70" />
-                      <Badge variant="outline" className="text-sm">2. 파일 선택(스테이징)</Badge>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/70" />
-                      <Badge variant="outline" className="text-sm">3. 커밋 메시지</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 4 && (
-              <Card className="rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
-                <CardContent className="pt-6">
-                  <div className="space-y-3 text-center">
-                    <p className="text-sm text-muted-foreground font-semibold">Git Flow 브랜치 예시:</p>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      <Badge className="border-[#b6e3ff] bg-[#ddf4ff] text-[#0969da]">feature/login</Badge>
-                      <Badge className="border-[#aceebb] bg-[#dafbe1] text-[#1a7f37]">feature/signup</Badge>
-                      <Badge className="border-[#ffd8b5] bg-[#fff1e5] text-[#bc4c00]">release/1.2.0</Badge>
-                      <Badge className="border-[#d8dee4] bg-[#f6f8fa] text-[#57606a]">hotfix/1.2.1</Badge>
-                    </div>
-
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+              ) : null}
+            </aside>
           </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={handlePrevStep}
-              disabled={currentStep === 0}
-            >
+          <div className="rounded-md bg-[#fff8c5] p-4 text-[#7d4e00] dark:bg-[#2d260f] dark:text-[#f0d98c]">
+            <p className="font-semibold">처음에는 이 순서만 기억하세요</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <Badge variant="outline">로그인</Badge>
+              <ArrowRight className="h-4 w-4" />
+              <Badge variant="outline">프로젝트 추가</Badge>
+              <ArrowRight className="h-4 w-4" />
+              <Badge variant="outline">프로젝트 선택</Badge>
+              <ArrowRight className="h-4 w-4" />
+              <Badge variant="outline">커밋</Badge>
+              <ArrowRight className="h-4 w-4" />
+              <Badge variant="outline">Push</Badge>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <Button variant="outline" onClick={handlePrevStep} disabled={currentStep === 0}>
               이전
             </Button>
-            
-            <div className="flex gap-2">
-              {currentStep === guideSteps.length - 1 ? (
-                <Button onClick={handleComplete} size="lg" className="gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
-                  완료하고 시작하기
-                </Button>
-              ) : (
-                <Button onClick={handleNextStep} size="lg" className="gap-2">
-                  다음
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-              )}
-            </div>
-          </div>
 
-          {/* Quick Start */}
-          <Card className="mt-6 rounded-md border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Play className="mt-1 h-5 w-5 flex-shrink-0 text-[#0969da]" />
-                <div>
-                  <h4 className="font-semibold mb-2">바로 시작하고 싶다면?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    1) 상단의 "토큰 로그인"으로 로그인하고, 2) '프로젝트' 탭에서 Clone/추가로 시작하세요!
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {currentStep === guideSteps.length - 1 ? (
+              <Button onClick={handleComplete} size="lg" className="gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                완료하고 시작하기
+              </Button>
+            ) : (
+              <Button onClick={handleNextStep} size="lg" className="gap-2">
+                다음
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

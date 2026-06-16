@@ -239,7 +239,7 @@ export function LearningSection() {
     <div className="space-y-5">
       {/* Progress Card */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle>학습 진행도</CardTitle>
           <CardDescription>
             {completedCount} / {totalTopics} 주제 완료
@@ -264,7 +264,7 @@ export function LearningSection() {
       {/* Learning Modules */}
       {learningModules.map((module) => (
         <Card key={module.id} className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <CardTitle>{module.title}</CardTitle>
               <Badge variant={module.level === "초급" ? "default" : "secondary"}>

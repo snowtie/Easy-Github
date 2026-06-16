@@ -32,9 +32,9 @@ export function AppNavigation({
   onToggleTheme
 }: AppNavigationProps) {
   return (
-    <aside className="border-b border-[#d8dee4] bg-white/95 dark:border-[#30363d] dark:bg-[#15181e] lg:border-b-0 lg:border-r">
+    <aside className="bg-white/95 dark:bg-[#15181e] lg:border-r lg:border-[#d8dee4] lg:dark:border-[#30363d]">
       <div className="flex h-full flex-col">
-        <div className="border-b border-[#d8dee4] px-5 py-4 dark:border-[#30363d] lg:py-5">
+        <div className="px-5 py-4 lg:py-5">
           <AppBrand />
         </div>
 
@@ -65,7 +65,7 @@ export function AppNavigation({
           })}
         </nav>
 
-        <div className="flex gap-2 border-t border-[#d8dee4] p-3 dark:border-[#30363d] lg:block">
+        <div className="flex gap-2 p-3 lg:block">
           <Button
             type="button"
             variant="ghost"

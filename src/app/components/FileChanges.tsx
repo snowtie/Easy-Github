@@ -325,7 +325,7 @@ export function FileChanges() {
         {/* Explanation Card */}
         {showExplanation && (
           <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-            <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="flex items-center gap-2">
                   변경사항 탭이란?
@@ -370,7 +370,7 @@ export function FileChanges() {
         )}
 
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
                 <CardTitle>변경된 파일</CardTitle>
@@ -493,7 +493,7 @@ export function FileChanges() {
 
         {/* Diff Preview */}
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle>변경 내용 미리보기</CardTitle>
@@ -546,7 +546,7 @@ export function FileChanges() {
       {/* Commit Panel */}
       <div className="space-y-4">
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <CardTitle>커밋 정보</CardTitle>
             <CardDescription>선택한 파일을 커밋합니다</CardDescription>
           </CardHeader>

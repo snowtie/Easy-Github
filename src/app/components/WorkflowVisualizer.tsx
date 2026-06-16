@@ -61,7 +61,7 @@ export function WorkflowVisualizer() {
     <div className="space-y-5">
       {/* Workflow Selector */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle>Git 워크플로우 시각화</CardTitle>
           <CardDescription>
             다양한 Git 작업 흐름을 시각적으로 이해하세요
@@ -82,7 +82,7 @@ export function WorkflowVisualizer() {
 
       {/* Workflow Visualization */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle>{currentWorkflow.title}</CardTitle>
           <CardDescription>{currentWorkflow.description}</CardDescription>
         </CardHeader>
@@ -123,7 +123,7 @@ export function WorkflowVisualizer() {
 
       {/* Additional Workflow Examples */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle>실전 시나리오</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">

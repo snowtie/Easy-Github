@@ -310,7 +310,7 @@ export function PullRequestManager() {
       {/* Guide Card */}
       {showGuide && (
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2">
                 Pull Request가 뭐예요?
@@ -436,7 +436,7 @@ export function PullRequestManager() {
 
        {/* PR List */}
        <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-         <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+         <CardHeader className="pb-4">
            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
              <div className="min-w-0">
                <CardTitle>Pull Requests</CardTitle>
@@ -627,7 +627,7 @@ export function PullRequestManager() {
                             )}
 
                             {/* Meta Info */}
-                             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t pt-2 text-sm text-muted-foreground">
+                             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-5 h-5">
                                   <AvatarFallback className="text-xs">

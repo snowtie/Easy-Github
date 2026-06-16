@@ -247,7 +247,7 @@ export function CommandPractice() {
     <div className="space-y-5">
       {/* Progress */}
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle>연습 진행도</CardTitle>
           <CardDescription>
             {practicedCount} / {totalCommands} 명령어 연습 완료
@@ -266,7 +266,7 @@ export function CommandPractice() {
       {/* Command Categories */}
       {commandCategories.map((category, catIndex) => (
         <Card key={catIndex} className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
               <Terminal className="w-5 h-5" />
               {category.name}

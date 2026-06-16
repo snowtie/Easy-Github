@@ -443,7 +443,7 @@ export function BranchManager() {
       {/* Guide Card */}
       {showGuide && (
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2">
                 브랜치가 뭐예요?
@@ -542,7 +542,7 @@ export function BranchManager() {
         )}
 
       <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-        <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <GitPullRequest className="w-5 h-5 text-slate-600" />
             GitHub 요약
@@ -603,7 +603,7 @@ export function BranchManager() {
       {/* Create Branch Form */}
       {showCreateBranch && (
         <Card className="rounded-md border-[#0969da] shadow-sm">
-          <CardHeader className="border-b border-[#d8dee4] bg-[#f6f8fa] dark:border-[#30363d] dark:bg-[#15181e]">
+          <CardHeader className="bg-[#f6f8fa] dark:bg-[#15181e]">
             <CardTitle>새 브랜치 만들기</CardTitle>
             <CardDescription className="text-base">
               새로운 작업을 위한 독립적인 공간을 만들어요
@@ -684,7 +684,7 @@ export function BranchManager() {
 
        {/* Branch List */}
         <Card className="rounded-md border-[#d8dee4] shadow-sm dark:border-[#30363d]">
-          <CardHeader className="border-b border-[#d8dee4] pb-4 dark:border-[#30363d]">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <CardTitle>모든 브랜치</CardTitle>
